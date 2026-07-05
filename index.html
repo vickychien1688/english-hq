@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英文資源總部｜加盟商教學資源平台</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  :root {
+    --primary:#2563eb; --primary-dark:#1d4ed8; --bg:#f5f7fb; --card:#ffffff;
+    --text:#1f2937; --muted:#6b7280; --border:#e5e7eb; --danger:#dc2626; --ok:#16a34a;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Noto Sans TC",-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+         background:var(--bg); color:var(--text); min-height:100vh; }
+  .hidden { display:none !important; }
+  button { cursor:pointer; font-family:inherit; }
+  input, select, textarea { font-family:inherit; font-size:14px; padding:10px 12px;
+    border:1px solid var(--border); border-radius:8px; width:100%; background:#fff; }
+  input:focus, select:focus { outline:2px solid var(--primary); border-color:transparent; }
+  .btn { padding:10px 18px; border:none; border-radius:8px; font-size:14px; font-weight:600; }
+  .btn-primary { background:var(--primary); color:#fff; }
+  .btn-primary:hover { background:var(--primary-dark); }
+  .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+  .btn-danger { background:#fee2e2; color:var(--danger); }
+  .btn-sm { padding:6px 12px; font-size:13px; }
+
+  /* ---------- 登入頁 ---------- */
+  #authView { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+  .auth-card { background:var(--card); border-radius:16px; box-shadow:0 8px 30px rgba(0,0,0,.08);
+    padding:36px; width:100%; max-width:420px; }
+  .auth-card h1 { font-size:22px; margin-bottom:4px; }
+  .auth-card .sub { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; }
+  .auth-toggle { text-align:center; margin-top:16px; font-size:14px; color:var(--muted); }
+  .auth-toggle a { color:var(--primary); cursor:pointer; text-decoration:none; font-weight:600; }
+  .msg { font-size:13px; margin-top:12px; padding:10px; border-radius:8px; display:none; }
+  .msg.err { display:block; background:#fee2e2; color:var(--danger); }
+  .msg.ok { display:block; background:#dcfce7; color:var(--ok); }
+
+  /* ---------- 主畫面 ---------- */
+  header { background:var(--card); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; }
+  .header-inner { max-width:1200px; margin:0 auto; padding:12px 20px; display:flex;
+    align-items:center; gap:12px; flex-wrap:wrap; }
+  .logo { font-size:17px; font-weight:800; color:var(--primary); margin-right:auto; }
+  .role-badge { font-size:12px; padding:3px 10px; border-radius:99px; background:#eef2ff; color:var(--primary); font-weight:700; }
+  .levels { max-width:1200px; margin:16px auto 0; padding:0 20px; display:flex; gap:8px; flex-wrap:wrap; }
+  .level-tab { padding:8px 18px; border-radius:99px; border:1px solid var(--border);
+    background:var(--card); font-size:14px; font-weight:600; color:var(--muted); }
+  .level-tab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+  .main-wrap { max-width:1200px; margin:16px auto; padding:0 20px; display:flex; gap:16px; }
+  .cats { width:190px; flex-shrink:0; display:flex; flex-direction:column; gap:6px; }
+  .cat-btn { text-align:left; padding:10px 14px; border-radius:10px; border:none;
+    background:transparent; font-size:14px; color:var(--text); }
+  .cat-btn.active { background:var(--card); font-weight:700; color:var(--primary);
+    box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  .content { flex:1; min-width:0; }
+  .content-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .content-head h2 { font-size:17px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; }
+  .res-card { background:var(--card); border-radius:12px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.05);
+    display:flex; flex-direction:column; gap:8px; }
+  .res-type { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.5px; }
+  .res-title { font-size:15px; font-weight:700; line-height:1.4; }
+  .res-meta { font-size:12px; color:var(--muted); }
+  .res-actions { display:flex; gap:8px; margin-top:auto; padding-top:8px; }
+  .empty { color:var(--muted); text-align:center; padding:60px 0; font-size:14px; }
+
+  /* ---------- 檢視器 ---------- */
+  #viewerModal { position:fixed; inset:0; background:rgba(15,23,42,.92); z-index:100;
+    display:flex; flex-direction:column; }
+  .viewer-bar { display:flex; align-items:center; gap:12px; padding:12px 20px; color:#fff; }
+  .viewer-bar .vtitle { font-size:15px; font-weight:600; margin-right:auto;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .viewer-body { flex:1; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:10px; }
+  #pdfCanvas { max-width:100%; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,.4); }
+  .viewer-body img { max-width:100%; max-height:100%; object-fit:contain; }
+  .viewer-body video { max-width:100%; max-height:calc(100vh - 120px); }
+  .pdf-nav { display:flex; align-items:center; justify-content:center; gap:16px; padding:10px; color:#fff; }
+  .pdf-nav button { background:rgba(255,255,255,.15); color:#fff; border:none;
+    border-radius:8px; padding:8px 16px; font-size:14px; }
+  .no-preview { color:#fff; text-align:center; padding:60px 20px; font-size:15px; line-height:1.8; }
+
+  /* ---------- 上傳 / 管理 modal ---------- */
+  .modal-mask { position:fixed; inset:0; background:rgba(15,23,42,.5); z-index:90;
+    display:flex; align-items:center; justify-content:center; padding:20px; }
+  .modal { background:var(--card); border-radius:16px; padding:28px; width:100%;
+    max-width:520px; max-height:90vh; overflow:auto; }
+  .modal h3 { margin-bottom:18px; font-size:17px; }
+  .modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+
+  /* ---------- 管理頁 ---------- */
+  .admin-wrap { max-width:1200px; margin:16px auto; padding:0 20px; }
+  .admin-tabs { display:flex; gap:8px; margin-bottom:16px; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px;
+    overflow:hidden; font-size:13px; }
+  th, td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); }
+  th { background:#f9fafb; font-weight:700; color:var(--muted); font-size:12px; }
+  .pill { font-size:11px; padding:2px 8px; border-radius:99px; font-weight:700; }
+  .pill.pending { background:#fef3c7; color:#b45309; }
+  .pill.approved { background:#dcfce7; color:var(--ok); }
+  .pill.disabled { background:#f3f4f6; color:var(--muted); }
+
+  @media (max-width:720px) {
+    .main-wrap { flex-direction:column; }
+    .cats { width:100%; flex-direction:row; overflow-x:auto; }
+    .cat-btn { white-space:nowrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== 登入 / 註冊 ===================== -->
+<div id="authView">
+  <div class="auth-card">
+    <h1>英文資源總部</h1>
+    <p class="sub">加盟商教學資源平台｜僅供內部使用</p>
+
+    <div id="loginForm">
+      <div class="field"><label>Email</label><input id="loginEmail" type="email" autocomplete="username"></div>
+      <div class="field"><label>密碼</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
+      <button class="btn btn-primary" style="width:100%" onclick="doLogin()">登入</button>
+      <div class="auth-toggle">還沒有帳號？<a onclick="toggleAuth(true)">申請註冊</a></div>
+    </div>
+
+    <div id="registerForm" class="hidden">
+      <div class="field"><label>Email</label><input id="regEmail" type="email"></div>
+      <div class="field"><label>密碼（至少 6 碼）</label><input id="regPassword" type="password"></div>
+      <div class="field"><label>姓名</label><input id="regName" type="text"></div>
+      <div class="field"><label>分校名稱</label><input id="regBranch" type="text" placeholder="例：家功場放學趣 ○○分校"></div>
+      <div class="field"><label>聯絡電話（總部審核時核對）</label><input id="regPhone" type="tel"></div>
+      <button class="btn btn-primary" style="width:100%" onclick="doRegister()">送出申請</button>
+      <div class="auth-toggle">已有帳號？<a onclick="toggleAuth(false)">回到登入</a></div>
+    </div>
+
+    <div id="authMsg" class="msg"></div>
+  </div>
+</div>
+
+<!-- ===================== 待審核畫面 ===================== -->
+<div id="pendingView" class="hidden">
+  <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;">
+    <div class="auth-card" style="text-align:center;">
+      <h1>⏳ 帳號審核中</h1>
+      <p class="sub" style="margin:16px 0;">您的註冊申請已送出，<br>待總部核准後即可使用。請聯繫總部加速審核。</p>
+      <button class="btn btn-ghost" onclick="doLogout()">登出</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 主畫面 ===================== -->
+<div id="appView" class="hidden">
+  <header>
+    <div class="header-inner">
+      <span class="logo">📚 英文資源總部</span>
+      <span id="userName" style="font-size:14px;"></span>
+      <span id="roleBadge" class="role-badge"></span>
+      <button id="uploadBtn" class="btn btn-primary btn-sm hidden" onclick="openUpload()">＋ 上傳資源</button>
+      <button id="adminBtn" class="btn btn-ghost btn-sm hidden" onclick="showAdmin(true)">管理後台</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">登出</button>
+    </div>
+  </header>
+
+  <div id="browseView">
+    <div class="levels" id="levelTabs"></div>
+    <div class="main-wrap">
+      <nav class="cats" id="catList"></nav>
+      <section class="content">
+        <div class="content-head"><h2 id="contentTitle"></h2></div>
+        <div class="grid" id="resGrid"></div>
+        <div class="empty hidden" id="emptyHint">此分類目前沒有資源</div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 管理後台 -->
+  <div id="adminView" class="admin-wrap hidden">
+    <div class="admin-tabs">
+      <button class="btn btn-ghost btn-sm" onclick="showAdmin(false)">← 回資源列表</button>
+      <button id="tabUsers" class="btn btn-primary btn-sm" onclick="adminTab('users')">使用者管理</button>
+      <button id="tabLogs" class="btn btn-ghost btn-sm" onclick="adminTab('logs')">操作紀錄</button>
+    </div>
+    <div id="usersPanel"></div>
+    <div id="logsPanel" class="hidden"></div>
+  </div>
+</div>
+
+<!-- ===================== 檢視器 ===================== -->
+<div id="viewerModal" class="hidden" oncontextmenu="return false;">
+  <div class="viewer-bar">
+    <span class="vtitle" id="viewerTitle"></span>
+    <button id="viewerDownload" class="btn btn-primary btn-sm hidden" onclick="downloadCurrent()">下載</button>
+    <button class="btn btn-ghost btn-sm" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="closeViewer()">✕ 關閉</button>
+  </div>
+  <div class="viewer-body" id="viewerBody"></div>
+  <div class="pdf-nav hidden" id="pdfNav">
+    <button onclick="pdfPrev()">‹ 上一頁</button>
+    <span id="pdfPageInfo"></span>
+    <button onclick="pdfNext()">下一頁 ›</button>
+  </div>
+</div>
+
+<!-- ===================== 上傳 modal ===================== -->
+<div id="uploadModal" class="modal-mask hidden">
+  <div class="modal">
+    <h3>上傳資源</h3>
+    <div class="field"><label>級別</label>
+      <select id="upLevel"></select></div>
+    <div class="field"><label>分類</label>
+      <select id="upCategory"></select></div>
+    <div class="field"><label>標題</label><input id="upTitle" type="text" placeholder="例：Week1 Summer Vacation 教案"></div>
+    <div class="field"><label>說明（選填）</label><input id="upDesc" type="text"></div>
+    <div class="field"><label>檔案</label><input id="upFile" type="file"></div>
+    <div id="upMsg" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeUpload()">取消</button>
+      <button class="btn btn-primary" id="upSubmit" onclick="doUpload()">上傳</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   設定：請填入你的 Supabase 專案資訊（見 README 步驟 2）
+   ============================================================ */
+const SUPABASE_URL = "https://nvnrkzveyehcnlaszzin.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_8-cmiPFlZNzWu4VyhMA7dA_B0hteB1u";
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+/* ---------- 常數 ---------- */
+const LEVELS = [
+  { key:"beginner", label:"Beginner" },
+  { key:"starter",  label:"Starter" },
+  { key:"level1",   label:"Level 1" },
+  { key:"level2",   label:"Level 2" },
+  { key:"level3",   label:"Level 3" },
+];
+const CATEGORIES = [
+  { key:"summer_vacation", label:"① Summer Vacation" },
+  { key:"eow",             label:"② EOW" },
+  { key:"reading_base",    label:"③ Reading Base" },
+  { key:"eow_ws",          label:"④ EOW WS" },
+  { key:"grammar",         label:"⑤ Grammar" },
+  { key:"phonic_lab",      label:"⑥ Phonic Lab" },
+  { key:"holiday",         label:"⑦ Holiday" },
+];
+const ROLE_LABEL = { admin:"總部管理員", manager:"總部教務", branch:"分校" };
+
+let profile = null;
+let curLevel = "beginner", curCat = "summer_vacation";
+let currentResource = null;
+let pdfDoc = null, pdfPage = 1;
+
+/* ---------- 工具 ---------- */
+const $ = id => document.getElementById(id);
+function showMsg(el, text, ok=false){ el.textContent = text; el.className = "msg " + (ok?"ok":"err"); }
+function extType(name){
+  const e = (name.split(".").pop()||"").toLowerCase();
+  if (e === "pdf") return "pdf";
+  if (["png","jpg","jpeg","gif","webp"].includes(e)) return "image";
+  if (["mp4","webm","mov"].includes(e)) return "video";
+  if (["mp3","wav","m4a","ogg"].includes(e)) return "audio";
+  if (["ppt","pptx"].includes(e)) return "ppt";
+  if (["doc","docx"].includes(e)) return "doc";
+  return "other";
+}
+async function log(action, resource_id=null, detail={}){
+  try {
+    const { data:{ user } } = await db.auth.getUser();
+    if (!user) return;
+    await db.from("audit_log").insert({ user_id:user.id, user_email:user.email, action, resource_id, detail });
+  } catch(e){ console.warn("audit log failed", e); }
+}
+
+/* ---------- 登入 / 註冊 ---------- */
+function toggleAuth(showReg){
+  $("loginForm").classList.toggle("hidden", showReg);
+  $("registerForm").classList.toggle("hidden", !showReg);
+  $("authMsg").className = "msg";
+}
+async function doLogin(){
+  const { error } = await db.auth.signInWithPassword({
+    email: $("loginEmail").value.trim(), password: $("loginPassword").value });
+  if (error) return showMsg($("authMsg"), "登入失敗：" + error.message);
+  await log("login");
+  boot();
+}
+async function doRegister(){
+  const email = $("regEmail").value.trim();
+  const { error } = await db.auth.signUp({
+    email, password: $("regPassword").value,
+    options: { data: {
+      display_name: $("regName").value.trim(),
+      branch_name: $("regBranch").value.trim(),
+      phone: $("regPhone").value.trim() } }
+  });
+  if (error) return showMsg($("authMsg"), "註冊失敗：" + error.message);
+  showMsg($("authMsg"), "申請已送出！請先到信箱點擊驗證連結，總部核准後即可登入。", true);
+  toggleAuth(false);
+}
+async function doLogout(){ await db.auth.signOut(); location.reload(); }
+
+/* ---------- 啟動 ---------- */
+async function boot(){
+  const { data:{ user } } = await db.auth.getUser();
+  if (!user){ show("authView"); return; }
+  const { data } = await db.from("profiles").select("*").eq("id", user.id).single();
+  profile = data;
+  if (!profile || profile.status !== "approved"){ show("pendingView"); return; }
+  $("userName").textContent = (profile.display_name || profile.email) +
+    (profile.branch_name ? "｜" + profile.branch_name : "");
+  $("roleBadge").textContent = ROLE_LABEL[profile.role] || profile.role;
+  const canUpload = ["admin","manager"].includes(profile.role);
+  $("uploadBtn").classList.toggle("hidden", !canUpload);
+  $("adminBtn").classList.toggle("hidden", profile.role !== "admin");
+  renderTabs();
+  show("appView");
+  loadResources();
+}
+function show(id){
+  ["authView","pendingView","appView"].forEach(v => $(v).classList.toggle("hidden", v !== id));
+}
+
+/* ---------- 瀏覽 ---------- */
+function renderTabs(){
+  $("levelTabs").innerHTML = LEVELS.map(l =>
+    `<button class="level-tab ${l.key===curLevel?'active':''}" onclick="setLevel('${l.key}')">${l.label}</button>`).join("");
+  $("catList").innerHTML = CATEGORIES.map(c =>
+    `<button class="cat-btn ${c.key===curCat?'active':''}" onclick="setCat('${c.key}')">${c.label}</button>`).join("");
+  const lv = LEVELS.find(l=>l.key===curLevel), ct = CATEGORIES.find(c=>c.key===curCat);
+  $("contentTitle").textContent = lv.label + "・" + ct.label;
+}
+function setLevel(k){ curLevel = k; renderTabs(); loadResources(); }
+function setCat(k){ curCat = k; renderTabs(); loadResources(); }
+
+async function loadResources(){
+  const { data, error } = await db.from("resources").select("*")
+    .eq("level", curLevel).eq("category", curCat).order("created_at", { ascending:false });
+  const grid = $("resGrid");
+  if (error){ grid.innerHTML = ""; return; }
+  $("emptyHint").classList.toggle("hidden", data.length > 0);
+  const canDL = ["admin","manager"].includes(profile.role);
+  grid.innerHTML = data.map(r => `
+    <div class="res-card">
+      <span class="res-type">${r.file_type.toUpperCase()}</span>
+      <span class="res-title">${esc(r.title)}</span>
+      <span class="res-meta">${esc(r.description||"")}</span>
+      <span class="res-meta">${new Date(r.created_at).toLocaleDateString("zh-TW")}・${fmtSize(r.file_size)}</span>
+      <div class="res-actions">
+        <button class="btn btn-primary btn-sm" onclick='openViewer(${JSON.stringify(r.id)})'>線上檢視</button>
+        ${canDL ? `<button class="btn btn-ghost btn-sm" onclick='doDownload(${JSON.stringify(r.id)})'>下載</button>` : ""}
+        ${canDL ? `<button class="btn btn-danger btn-sm" onclick='doDelete(${JSON.stringify(r.id)})'>刪除</button>` : ""}
+      </div>
+    </div>`).join("");
+  window._resCache = Object.fromEntries(data.map(r => [r.id, r]));
+}
+function esc(s){ return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function fmtSize(b){ if(!b) return ""; return b > 1048576 ? (b/1048576).toFixed(1)+" MB" : Math.round(b/1024)+" KB"; }
+
+/* ---------- 檢視器（分校：只能線上看，無下載鈕） ---------- */
+async function openViewer(id){
+  const r = window._resCache[id]; if (!r) return;
+  currentResource = r;
+  const { data, error } = await db.storage.from("resources").createSignedUrl(r.file_path, 3600);
+  if (error) return alert("無法載入檔案：" + error.message);
+  await log("view", r.id, { title:r.title });
+  const url = data.signedUrl;
+  const canDL = ["admin","manager"].includes(profile.role);
+  $("viewerDownload").classList.toggle("hidden", !canDL);
+  $("viewerTitle").textContent = r.title;
+  const body = $("viewerBody");
+  body.innerHTML = "";
+  $("pdfNav").classList.add("hidden");
+  $("viewerModal").classList.remove("hidden");
+
+  if (r.file_type === "pdf"){
+    const canvas = document.createElement("canvas");
+    canvas.id = "pdfCanvas";
+    body.appendChild(canvas);
+    pdfDoc = await pdfjsLib.getDocument(url).promise;
+    pdfPage = 1;
+    $("pdfNav").classList.remove("hidden");
+    renderPdfPage();
+  } else if (r.file_type === "image"){
+    const img = document.createElement("img");
+    img.src = url; img.draggable = false;
+    body.appendChild(img);
+  } else if (r.file_type === "video"){
+    const v = document.createElement("video");
+    v.src = url; v.controls = true;
+    v.setAttribute("controlsList","nodownload noplaybackrate");
+    v.disablePictureInPicture = true;
+    body.appendChild(v);
+  } else if (r.file_type === "audio"){
+    const a = document.createElement("audio");
+    a.src = url; a.controls = true;
+    a.setAttribute("controlsList","nodownload");
+    a.style.marginTop = "60px";
+    body.appendChild(a);
+  } else {
+    body.innerHTML = `<div class="no-preview">此檔案格式（${r.file_type.toUpperCase()}）無法線上預覽。<br>` +
+      (canDL ? "請點右上角「下載」開啟。" : "請聯繫總部將此檔轉為 PDF 版本。") + "</div>";
+  }
+}
+async function renderPdfPage(){
+  const page = await pdfDoc.getPage(pdfPage);
+  const canvas = $("pdfCanvas"); if (!canvas) return;
+  const scale = Math.min(1.6, (document.documentElement.clientWidth - 40) / page.getViewport({scale:1}).width);
+  const viewport = page.getViewport({ scale: scale * (window.devicePixelRatio||1) });
+  canvas.width = viewport.width; canvas.height = viewport.height;
+  canvas.style.width = (viewport.width / (window.devicePixelRatio||1)) + "px";
+  await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+  $("pdfPageInfo").textContent = pdfPage + " / " + pdfDoc.numPages;
+}
+function pdfPrev(){ if (pdfDoc && pdfPage > 1){ pdfPage--; renderPdfPage(); } }
+function pdfNext(){ if (pdfDoc && pdfPage < pdfDoc.numPages){ pdfPage++; renderPdfPage(); } }
+function closeViewer(){
+  $("viewerModal").classList.add("hidden");
+  $("viewerBody").innerHTML = "";
+  pdfDoc = null; currentResource = null;
+}
+async function downloadCurrent(){ if (currentResource) doDownload(currentResource.id); }
+
+/* ---------- 下載（僅 admin / manager） ---------- */
+async function doDownload(id){
+  const r = window._resCache[id] || currentResource; if (!r) return;
+  const { data, error } = await db.storage.from("resources")
+    .createSignedUrl(r.file_path, 300, { download: r.file_name });
+  if (error) return alert("下載失敗：" + error.message);
+  await log("download", r.id, { title:r.title });
+  const a = document.createElement("a");
+  a.href = data.signedUrl; a.download = r.file_name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- 上傳 ---------- */
+function openUpload(){
+  $("upLevel").innerHTML = LEVELS.map(l=>`<option value="${l.key}" ${l.key===curLevel?"selected":""}>${l.label}</option>`).join("");
+  $("upCategory").innerHTML = CATEGORIES.map(c=>`<option value="${c.key}" ${c.key===curCat?"selected":""}>${c.label}</option>`).join("");
+  $("upMsg").className = "msg";
+  $("uploadModal").classList.remove("hidden");
+}
+function closeUpload(){ $("uploadModal").classList.add("hidden"); }
+async function doUpload(){
+  const file = $("upFile").files[0];
+  const title = $("upTitle").value.trim();
+  if (!file || !title) return showMsg($("upMsg"), "請填寫標題並選擇檔案");
+  $("upSubmit").disabled = true; $("upSubmit").textContent = "上傳中…";
+  try {
+    const level = $("upLevel").value, category = $("upCategory").value;
+    const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+    const path = `${level}/${category}/${Date.now()}_${safeName}`;
+    const { error: upErr } = await db.storage.from("resources").upload(path, file);
+    if (upErr) throw upErr;
+    const { data: row, error: insErr } = await db.from("resources").insert({
+      level, category, title, description: $("upDesc").value.trim(),
+      file_path: path, file_name: file.name, file_type: extType(file.name),
+      file_size: file.size, uploaded_by: profile.id
+    }).select().single();
+    if (insErr) throw insErr;
+    await log("upload", row.id, { title, file: file.name });
+    showMsg($("upMsg"), "上傳成功！", true);
+    $("upTitle").value = ""; $("upDesc").value = ""; $("upFile").value = "";
+    curLevel = level; curCat = category;
+    renderTabs(); loadResources();
+  } catch(e){ showMsg($("upMsg"), "上傳失敗：" + e.message); }
+  $("upSubmit").disabled = false; $("upSubmit").textContent = "上傳";
+}
+
+/* ---------- 刪除 ---------- */
+async function doDelete(id){
+  const r = window._resCache[id]; if (!r) return;
+  if (!confirm(`確定刪除「${r.title}」？`)) return;
+  const { error } = await db.from("resources").delete().eq("id", id);
+  if (error) return alert("刪除失敗：" + error.message);
+  await db.storage.from("resources").remove([r.file_path]);
+  await log("delete", id, { title:r.title });
+  loadResources();
+}
+
+/* ---------- 管理後台（admin） ---------- */
+function showAdmin(on){
+  $("browseView").classList.toggle("hidden", on);
+  $("adminView").classList.toggle("hidden", !on);
+  if (on) adminTab("users");
+}
+function adminTab(t){
+  $("usersPanel").classList.toggle("hidden", t !== "users");
+  $("logsPanel").classList.toggle("hidden", t !== "logs");
+  $("tabUsers").className = "btn btn-sm " + (t==="users" ? "btn-primary" : "btn-ghost");
+  $("tabLogs").className  = "btn btn-sm " + (t==="logs"  ? "btn-primary" : "btn-ghost");
+  t === "users" ? loadUsers() : loadLogs();
+}
+async function loadUsers(){
+  const { data, error } = await db.from("profiles").select("*")
+    .order("status", { ascending:false }).order("created_at", { ascending:false });
+  if (error) return;
+  $("usersPanel").innerHTML = `<table><thead><tr>
+    <th>姓名</th><th>Email</th><th>分校</th><th>電話</th><th>角色</th><th>狀態</th><th>操作</th>
+    </tr></thead><tbody>` + data.map(u => `<tr>
+      <td>${esc(u.display_name||"")}</td><td>${esc(u.email)}</td>
+      <td>${esc(u.branch_name||"")}</td><td>${esc(u.phone||"")}</td>
+      <td><select onchange="setRole('${u.id}', this.value)" ${u.id===profile.id?"disabled":""}>
+        ${["branch","manager","admin"].map(r=>`<option value="${r}" ${u.role===r?"selected":""}>${ROLE_LABEL[r]}</option>`).join("")}
+      </select></td>
+      <td><span class="pill ${u.status}">${{pending:"待審核",approved:"已核准",disabled:"停用"}[u.status]}</span></td>
+      <td>${u.status!=="approved" ? `<button class="btn btn-primary btn-sm" onclick="setStatus('${u.id}','approved')">核准</button>` : ""}
+          ${u.status==="approved" && u.id!==profile.id ? `<button class="btn btn-danger btn-sm" onclick="setStatus('${u.id}','disabled')">停用</button>` : ""}</td>
+    </tr>`).join("") + "</tbody></table>";
+}
+async function setStatus(id, status){
+  const { error } = await db.from("profiles").update({ status }).eq("id", id);
+  if (error) return alert(error.message);
+  await log("approve_user", null, { target:id, status });
+  loadUsers();
+}
+async function setRole(id, role){
+  const { error } = await db.from("profiles").update({ role }).eq("id", id);
+  if (error) return alert(error.message);
+  await log("role_change", null, { target:id, role });
+  loadUsers();
+}
+async function loadLogs(){
+  const { data, error } = await db.from("audit_log").select("*")
+    .order("created_at", { ascending:false }).limit(300);
+  if (error) return;
+  const AL = { login:"登入", register:"註冊", view:"線上檢視", download:"下載",
+               upload:"上傳", delete:"刪除", approve_user:"審核使用者", role_change:"變更角色" };
+  $("logsPanel").innerHTML = `<table><thead><tr>
+    <th>時間</th><th>使用者</th><th>動作</th><th>內容</th></tr></thead><tbody>` +
+    data.map(l => `<tr>
+      <td>${new Date(l.created_at).toLocaleString("zh-TW")}</td>
+      <td>${esc(l.user_email||"")}</td>
+      <td>${AL[l.action]||l.action}</td>
+      <td>${esc(l.detail?.title || l.detail?.file || "")}</td>
+    </tr>`).join("") + "</tbody></table>";
+}
+
+/* ---------- 進入點 ---------- */
+boot();
+</script>
+</body>
+</html>
