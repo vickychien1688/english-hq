@@ -668,32 +668,6 @@ async function loadLogs(){
     </tr>`).join("") + "</tbody></table>";
 }
 
-/* ---------- 一次性搬移接收器（僅在 mig_enabled 開啟時作用，搬移完成後將移除此段） ---------- */
-window.addEventListener("message", async (e) => {
-  if (e.origin !== "https://github.com") return;
-  if (localStorage.getItem("mig_enabled") !== "1") return;
-  const d = e.data || {};
-  if (d.cmd === "ping"){ e.source.postMessage({cmd:"pong"}, e.origin); return; }
-  if (d.cmd !== "upload") return;
-  try {
-    if (!/^(beginner|starter|level[1-4])\/summer_vacation\/mig_[\w.\-]+$/.test(d.path)) throw new Error("path not allowed");
-    const { data: exist } = await db.from("resources").select("id").eq("file_path", d.path).maybeSingle();
-    if (!exist){
-      const blob = new Blob([d.bytes], { type: d.mime || "application/octet-stream" });
-      const up = await db.storage.from("resources").upload(d.path, blob, { upsert: true });
-      if (up.error) throw up.error;
-      const { data:{ user } } = await db.auth.getUser();
-      const ins = await db.from("resources").insert({
-        level: d.level, category: "summer_vacation", title: d.title, description: d.desc || "",
-        file_path: d.path, file_name: d.fname, file_type: d.ftype,
-        file_size: d.bytes.byteLength || 0, uploaded_by: user.id
-      });
-      if (ins.error) throw ins.error;
-    }
-    e.source.postMessage({ cmd:"done", id: d.id }, e.origin);
-  } catch(err){ e.source.postMessage({ cmd:"fail", id: d.id, msg: String(err.message||err) }, e.origin); }
-});
-
 /* ---------- 進入點 ---------- */
 boot();
 </script>
