@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<!-- build: hierarchy-nav v3 (day-sort + day-grouping) -->
+<!-- build: hierarchy-nav v3.1 (visual polish) -->
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>英文資源總部｜加盟商教學資源平台</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<meta name="theme-color" content="#0e2038">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -158,6 +160,76 @@
     .cats { width:100%; flex-direction:row; overflow-x:auto; }
     .cat-btn { white-space:nowrap; }
   }
+
+  /* ============ v3.1 全站精緻化 ============ */
+  :root { --gold-2:#dcbb6a; --radius:16px; }
+  ::selection { background:rgba(193,154,61,.28); }
+  body { letter-spacing:.01em; }
+  *::-webkit-scrollbar { width:10px; height:10px; }
+  *::-webkit-scrollbar-thumb { background:#d8d2c4; border-radius:99px; border:2px solid var(--bg); }
+  *::-webkit-scrollbar-track { background:transparent; }
+
+  .btn { border-radius:12px; }
+  .btn-primary { background:linear-gradient(135deg,#16324f 0%,#0e2038 65%); box-shadow:0 1px 2px rgba(14,32,56,.25); }
+  .btn-primary:hover { background:linear-gradient(135deg,#1b3a5e,#132a47); box-shadow:0 6px 18px rgba(14,32,56,.22); }
+  .btn-ghost:hover { background:#fff; }
+  input:hover, select:hover { border-color:#d5cebe; }
+  input, select { background:#fcfbf8; }
+
+  header { border-bottom:none; box-shadow:0 1px 0 rgba(230,226,216,.9); }
+  header::after { content:""; display:block; height:2px;
+    background:linear-gradient(90deg,transparent,var(--gold) 28%,var(--gold-2) 50%,var(--gold) 72%,transparent); opacity:.9; }
+  .logo { letter-spacing:.02em; font-size:20px; }
+  .role-badge { background:linear-gradient(135deg,#f5ecd4,#eadfbd); border:1px solid rgba(193,154,61,.35); }
+
+  .levels { gap:8px; }
+  .level-tab { font-family:var(--serif); font-size:16px; letter-spacing:.05em; padding:10px 18px 13px; }
+  .level-tab:hover { border-bottom-color:rgba(193,154,61,.35); }
+
+  .cat-btn { border-radius:0 12px 12px 0; }
+  .content-head h2 { font-size:22px; letter-spacing:.02em; }
+
+  .grid { gap:18px; }
+  .res-card { border-radius:var(--radius); border:1px solid #eee7d8; padding:22px; position:relative; overflow:hidden; }
+  .res-card::after { content:""; position:absolute; inset:0 0 auto 0; height:3px;
+    background:linear-gradient(90deg,var(--gold),var(--gold-2)); opacity:0; transition:opacity .18s; }
+  .res-card:hover { border-color:rgba(193,154,61,.45); }
+  .res-card:hover::after { opacity:1; }
+  .res-type { display:inline-flex; align-items:center; gap:6px; width:max-content;
+    background:#faf6ec; border:1px solid rgba(193,154,61,.28); color:#96762c;
+    padding:3px 11px; border-radius:99px; font-size:10.5px; letter-spacing:.12em; }
+  .res-title { font-size:16px; }
+
+  .folder-card { cursor:pointer; text-align:center; padding:30px 18px 26px; }
+  .folder-ico { width:64px; height:64px; margin:0 auto 6px; display:flex; align-items:center; justify-content:center;
+    font-size:30px; border-radius:50%;
+    background:radial-gradient(circle at 30% 25%, #fbf5e6, #f0e5c9);
+    border:1px solid rgba(193,154,61,.35);
+    box-shadow:inset 0 1px 3px rgba(255,255,255,.85), 0 3px 8px rgba(14,32,56,.07); }
+  .folder-card .res-title { font-family:var(--serif); font-size:17.5px; font-weight:900; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  #resGrid .res-card { animation:fadeUp .38s ease both; }
+  #resGrid .res-card:nth-child(2) { animation-delay:.05s; }
+  #resGrid .res-card:nth-child(3) { animation-delay:.1s; }
+  #resGrid .res-card:nth-child(4) { animation-delay:.15s; }
+  #resGrid .res-card:nth-child(5) { animation-delay:.2s; }
+  #resGrid .res-card:nth-child(6) { animation-delay:.25s; }
+  #resGrid .res-card:nth-child(n+7) { animation-delay:.3s; }
+
+  .auth-card h1 { font-size:30px; }
+  .auth-card { animation:fadeUp .5s ease both; }
+  .auth-hero h2 { letter-spacing:.02em; }
+  #authView .btn-primary { padding:13px 20px; font-size:15px; letter-spacing:.1em; }
+
+  .viewer-bar { background:rgba(8,16,30,.65); backdrop-filter:blur(10px); }
+  .pdf-nav button:hover { background:rgba(255,255,255,.28); }
+
+  table { border-radius:var(--radius); }
+  th { letter-spacing:.09em; }
+  tr:hover td { background:#fdfcf8; }
+
+  .empty { padding:70px 0; letter-spacing:.05em; }
 </style>
 </head>
 <body>
@@ -433,10 +505,11 @@ function crumb(){
     : `<b>${esc(curWeek)}</b>`);
   return `<div style="margin-bottom:14px;font-size:14px;">${h}</div>`;
 }
+const TYPE_ICO = { pdf:"📄", image:"🖼️", video:"🎬", audio:"🎧", ppt:"📊", doc:"📝", other:"📁" };
 function resCard(r, canDL, label){
   return `
     <div class="res-card">
-      <span class="res-type">${r.file_type.toUpperCase()}</span>
+      <span class="res-type">${TYPE_ICO[r.file_type]||"📁"} ${r.file_type.toUpperCase()}</span>
       <span class="res-title">${esc(label)}</span>
       <span class="res-meta">${esc(r.description||"")}</span>
       <span class="res-meta">${new Date(r.created_at).toLocaleDateString("zh-TW")}・${fmtSize(r.file_size)}</span>
@@ -471,8 +544,8 @@ async function loadResources(){
       .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
     grid.innerHTML = crumb() + `<div class="grid">` + weeks.map(w => {
       const count = structured.filter(r => partsOf(r).week === w).length;
-      return `<div class="res-card" style="cursor:pointer;text-align:center;padding:28px 16px;" onclick='goWeek(${JSON.stringify(w)})'>
-        <div style="font-size:34px;">${weekIcon(w)}</div>
+      return `<div class="res-card folder-card" onclick='goWeek(${JSON.stringify(w)})'>
+        <div class="folder-ico">${weekIcon(w)}</div>
         <span class="res-title" style="margin:8px 0 2px;">${esc(w)}</span>
         <span class="res-meta">${count} 項資源・點擊進入</span>
       </div>`;
@@ -489,8 +562,8 @@ async function loadResources(){
     const days = [...new Set(inWeek.map(r => partsOf(r).day))].sort((a,b)=>dayOrder(a)-dayOrder(b));
     grid.innerHTML = crumb() + `<div class="grid">` + days.map(d => {
       const count = inWeek.filter(r => matchDay(r, d)).length;
-      return `<div class="res-card" style="cursor:pointer;text-align:center;padding:28px 16px;" onclick='goDay(${JSON.stringify(d)})'>
-        <div style="font-size:34px;">${d.includes("完整教案") ? "📋" : "📅"}</div>
+      return `<div class="res-card folder-card" onclick='goDay(${JSON.stringify(d)})'>
+        <div class="folder-ico">${d.includes("完整教案") ? "📋" : "📅"}</div>
         <span class="res-title" style="margin:8px 0 2px;">${esc(d)}</span>
         <span class="res-meta">${count} 項資源・點擊進入</span>
       </div>`;
