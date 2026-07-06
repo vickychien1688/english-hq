@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: hierarchy-nav v3.1 (visual polish) -->
+<!-- build: hierarchy-nav v3.2 (theme icons) -->
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -473,8 +473,21 @@ function goWeek(w){ curWeek = w; curDay = null; loadResources(); }
 function goDay(d){ curDay = d; loadResources(); }
 function goHome(){ curWeek = null; curDay = null; loadResources(); }
 
-const WEEK_ICONS = ["🏠","🧸","🦸","👹","🐶","🔍","🏙️","🏕️","🦖","⏳","🎉","⚽","📚"];
-function weekIcon(w){ const n = parseInt((w.match(/Week\s*(\d+)/i)||[])[1]||0); return WEEK_ICONS[(n-1+13)%13] || "📚"; }
+/* 週次圖示：依主題關鍵字自動配對（新主題可在此加一行） */
+const THEME_ICONS = [
+  [/monster/i,"👹"], [/\bpet\b/i,"🐶"], [/shake|ice ?cream/i,"🍦"],
+  [/house|forest/i,"🏠"], [/toy/i,"🧸"], [/healthy|hero/i,"🦸"],
+  [/animal/i,"🦁"], [/mansion|mystery/i,"🕵️"], [/school/i,"🏫"],
+  [/city/i,"🏙️"], [/camp|feast/i,"🏕️"], [/lost world|rescue|dino/i,"🦖"],
+  [/time travel/i,"⏳"], [/celebration|party/i,"🎉"], [/world cup|soccer|football/i,"⚽"],
+  [/christmas/i,"🎄"], [/halloween/i,"🎃"], [/easter/i,"🐰"],
+  [/space|rocket/i,"🚀"], [/ocean|sea\b/i,"🌊"], [/food|cook/i,"🍳"],
+  [/music|song/i,"🎵"], [/travel|trip/i,"✈️"], [/magic/i,"🪄"],
+];
+function weekIcon(w){
+  for (const [re, ico] of THEME_ICONS) if (re.test(w)) return ico;
+  return "📚";
+}
 function partsOf(r){
   if (!r.title.includes("｜")) return null;
   const [left, name] = r.title.split("｜");
