@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: v4.2 (free-form folders + custom subgroups) -->
+<!-- build: v4.3 (preset EOW Unit folders) -->
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -764,11 +764,18 @@ function openUpload(){
   $("uploadModal").classList.remove("hidden");
   refreshUpWeeks();
 }
-/* 週次資料夾選單：列出該級別/分類現有資料夾＋可新增 */
+/* 各分類的預設資料夾（尚未有檔案也會出現在選單） */
+const PRESET_FOLDERS = {
+  eow: Array.from({ length: 8 }, (_, i) => "Unit " + (i + 1)),
+  eow_ws: Array.from({ length: 8 }, (_, i) => "Unit " + (i + 1)),
+};
+/* 資料夾選單：列出該級別/分類現有資料夾＋預設資料夾＋可新增 */
 async function refreshUpWeeks(){
   const { data } = await db.from("resources").select("title")
     .eq("level", $("upLevel").value).eq("category", $("upCategory").value);
-  const weeks = [...new Set((data||[]).map(r => { const p = partsOf(r); return p && p.week; }).filter(Boolean))]
+  const existing = (data||[]).map(r => { const p = partsOf(r); return p && p.week; }).filter(Boolean);
+  const presets = PRESET_FOLDERS[$("upCategory").value] || [];
+  const weeks = [...new Set([...existing, ...presets])]
     .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
   $("upWeek").innerHTML = `<option value="">（不放入資料夾）</option>` +
     weeks.map(w=>`<option value="${esc(w)}" ${w===curWeek?"selected":""}>📁 ${esc(w)}</option>`).join("") +
