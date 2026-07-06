@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: v4.1 (folder-aware upload) -->
+<!-- build: v4.2 (free-form folders + custom subgroups) -->
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -397,17 +397,20 @@
       <select id="upLevel" onchange="refreshUpWeeks()"></select></div>
     <div class="field"><label>分類</label>
       <select id="upCategory" onchange="refreshUpWeeks()"></select></div>
-    <div class="field"><label>週次資料夾</label>
+    <div class="field"><label>資料夾</label>
       <select id="upWeek" onchange="upWeekChanged()"></select></div>
     <div class="field hidden" id="upNewWeekWrap"><label>新資料夾名稱</label>
-      <input id="upNewWeek" type="text" placeholder="例：Week 4: Space Adventure">
-      <p style="font-size:12px;color:var(--muted);margin-top:5px;">建議格式「Week 數字: 主題」，會自動配主題圖示並依週次排序。</p></div>
-    <div class="field hidden" id="upDayWrap"><label>單元（天）</label>
-      <select id="upDay">
-        <option value="">完整教案 & 學習單</option>
+      <input id="upNewWeek" type="text" placeholder="例：Unit 1、Week 4: Space Adventure">
+      <p style="font-size:12px;color:var(--muted);margin-top:5px;">任何名稱都可以。含數字會自動排序；「Week 數字: 主題」或「Unit 數字」會自動配圖示。</p></div>
+    <div class="field hidden" id="upDayWrap"><label>子分類（選填）</label>
+      <select id="upDay" onchange="upDayChanged()">
+        <option value="">一般內容（不再細分）</option>
         <option>Day 1</option><option>Day 2</option><option>Day 3</option>
         <option>Day 4</option><option>Day 5</option>
+        <option value="__custom">自訂名稱…</option>
       </select></div>
+    <div class="field hidden" id="upCustomDayWrap"><label>自訂子分類名稱</label>
+      <input id="upCustomDay" type="text" placeholder="例：Lesson 1、單字卡、測驗卷"></div>
     <div class="field"><label>名稱</label><input id="upTitle" type="text" placeholder="例：教師手冊 Day 1、學習單 Day 2 Practice"></div>
     <div class="field"><label>說明（選填）</label><input id="upDesc" type="text"></div>
     <div class="field"><label>檔案</label><input id="upFile" type="file"></div>
@@ -562,6 +565,7 @@ const THEME_ICONS = [
   [/christmas/i,"🎄"], [/halloween/i,"🎃"], [/easter/i,"🐰"],
   [/space|rocket/i,"🚀"], [/ocean|sea\b/i,"🌊"], [/food|cook/i,"🍳"],
   [/music|song/i,"🎵"], [/travel|trip/i,"✈️"], [/magic/i,"🪄"],
+  [/unit\s*\d/i,"📘"], [/lesson/i,"📖"], [/test|exam|quiz|測驗/i,"📝"],
 ];
 function weekIcon(w){
   for (const [re, ico] of THEME_ICONS) if (re.test(w)) return ico;
@@ -648,10 +652,12 @@ async function loadResources(){
     return;
   }
   const inWeek = structured.filter(r => partsOf(r).week === curWeek);
-  // 第二層：天
+  // 第二層：天／子分類（只有一組時直接跳到內容）
   if (!curDay){
     const dayOrder = d => d.includes("完整教案") ? 0 : (parseInt((d.match(/\d+/)||[9])[0]) || 9);
     const days = [...new Set(inWeek.map(r => partsOf(r).day))].sort((a,b)=>dayOrder(a)-dayOrder(b));
+    if (days.length === 1) curDay = days[0];
+    else {
     grid.innerHTML = crumb() + `<div class="grid">` + days.map(d => {
       const count = inWeek.filter(r => matchDay(r, d)).length;
       return `<div class="res-card folder-card" onclick='goDay(${JSON.stringify(d)})'>
@@ -662,6 +668,7 @@ async function loadResources(){
     }).join("") + `</div>`;
     grid.style.display = "block";
     return;
+    }
   }
   // 第三層：該天的資源（含自動歸入的該日學習單／教師手冊，Day 由小到大排序）
   const items = sortItems(inWeek.filter(r => matchDay(r, curDay)));
@@ -772,6 +779,11 @@ function upWeekChanged(){
   const v = $("upWeek").value;
   $("upNewWeekWrap").classList.toggle("hidden", v !== "__new");
   $("upDayWrap").classList.toggle("hidden", v === "");
+  upDayChanged();
+}
+function upDayChanged(){
+  const custom = $("upWeek").value !== "" && $("upDay").value === "__custom";
+  $("upCustomDayWrap").classList.toggle("hidden", !custom);
 }
 function closeUpload(){ $("uploadModal").classList.add("hidden"); }
 async function doUpload(){
@@ -783,7 +795,11 @@ async function doUpload(){
     week = $("upNewWeek").value.trim();
     if (!week) return showMsg($("upMsg"), "請輸入新資料夾名稱");
   }
-  const dayv = week ? $("upDay").value : "";
+  let dayv = week ? $("upDay").value : "";
+  if (dayv === "__custom"){
+    dayv = $("upCustomDay").value.trim();
+    if (!dayv) return showMsg($("upMsg"), "請輸入自訂子分類名稱");
+  }
   const title = week ? `${week}${dayv ? "・" + dayv : ""}｜${name}` : name;
   $("upSubmit").disabled = true; $("upSubmit").textContent = "上傳中…";
   try {
