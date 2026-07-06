@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: hierarchy-nav v3.2 (theme icons) -->
+<!-- build: v4.0 (teacher role + per-user permissions + admin user creation) -->
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -289,6 +289,8 @@
       <span id="roleBadge" class="role-badge"></span>
       <button id="uploadBtn" class="btn btn-primary btn-sm hidden" onclick="openUpload()">＋ 上傳資源</button>
       <button id="adminBtn" class="btn btn-ghost btn-sm hidden" onclick="showAdmin(true)">管理後台</button>
+      <button class="btn btn-ghost btn-sm" onclick="openProfileEdit()">個人資料</button>
+      <button class="btn btn-ghost btn-sm" onclick="changePwd()">改密碼</button>
       <button class="btn btn-ghost btn-sm" onclick="doLogout()">登出</button>
     </div>
   </header>
@@ -329,6 +331,61 @@
     <button onclick="pdfPrev()">‹ 上一頁</button>
     <span id="pdfPageInfo"></span>
     <button onclick="pdfNext()">下一頁 ›</button>
+  </div>
+</div>
+
+<!-- ===================== 新增使用者 modal ===================== -->
+<div id="addUserModal" class="modal-mask hidden">
+  <div class="modal">
+    <h3>新增使用者</h3>
+    <div class="field"><label>帳號 Email</label><input id="auEmail" type="email" placeholder="teacher01@our-reading-space.com">
+      <p style="font-size:12px;color:var(--muted);margin-top:5px;">不知道對方 Email？直接用代號帳號（如 teacher01@our-reading-space.com），老師登入後可自行更新姓名與資料。</p></div>
+    <div class="field"><label>暫時密碼（至少 8 碼，含英文與數字）</label><input id="auPwd" type="text"></div>
+    <div class="field"><label>姓名</label><input id="auName" type="text"></div>
+    <div class="field"><label>分校名稱</label><input id="auBranch" type="text"></div>
+    <div class="field"><label>聯絡電話</label><input id="auPhone" type="tel"></div>
+    <div class="field"><label>角色</label>
+      <select id="auRole">
+        <option value="teacher" selected>老師</option>
+        <option value="branch">分校</option>
+        <option value="manager">總部教務</option>
+        <option value="admin">總部管理員</option>
+      </select></div>
+    <div class="field"><label style="display:flex;gap:8px;align-items:center;font-weight:500;">
+      <input id="auDL" type="checkbox" style="width:auto"> 允許下載檔案</label></div>
+    <div id="auMsg" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="$('addUserModal').classList.add('hidden')">取消</button>
+      <button class="btn btn-primary" id="auSubmit" onclick="doAddUser()">建立帳號</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 個人資料 modal ===================== -->
+<div id="profileModal" class="modal-mask hidden">
+  <div class="modal" style="max-width:420px;">
+    <h3>個人資料</h3>
+    <div class="field"><label>姓名</label><input id="peName" type="text"></div>
+    <div class="field"><label>分校名稱</label><input id="peBranch" type="text"></div>
+    <div class="field"><label>聯絡電話</label><input id="pePhone" type="tel"></div>
+    <div id="peMsg" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="$('profileModal').classList.add('hidden')">關閉</button>
+      <button class="btn btn-primary" onclick="saveProfile()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 級別權限 modal ===================== -->
+<div id="levelModal" class="modal-mask hidden">
+  <div class="modal" style="max-width:380px;">
+    <h3>可存取級別</h3>
+    <div id="lvChecks"></div>
+    <p style="margin-top:12px;font-size:12.5px;color:var(--muted);">全部勾選＝不限制（含未來新增的級別）</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="$('levelModal').classList.add('hidden')">取消</button>
+      <button class="btn btn-primary" onclick="saveLevels()">儲存</button>
+    </div>
   </div>
 </div>
 
@@ -380,7 +437,16 @@ const CATEGORIES = [
   { key:"phonic_lab",      label:"⑥ Phonic Lab" },
   { key:"holiday",         label:"⑦ Holiday" },
 ];
-const ROLE_LABEL = { admin:"總部管理員", manager:"總部教務", branch:"分校" };
+const ROLE_LABEL = { admin:"總部管理員", manager:"總部教務", teacher:"老師", branch:"分校" };
+/* 逐人權限：can_download（null=依角色）、allowed_levels（null=全部級別） */
+function userCanDL(){
+  return ["admin","manager"].includes(profile.role) || profile.can_download === true;
+}
+function myLevels(){
+  if (["admin","manager"].includes(profile.role)) return LEVELS;
+  if (!profile.allowed_levels || !profile.allowed_levels.length) return LEVELS;
+  return LEVELS.filter(l => profile.allowed_levels.includes(l.key));
+}
 
 let profile = null;
 let curLevel = "beginner", curCat = "summer_vacation";
@@ -460,7 +526,9 @@ function show(id){
 
 /* ---------- 瀏覽 ---------- */
 function renderTabs(){
-  $("levelTabs").innerHTML = LEVELS.map(l =>
+  const lvs = myLevels();
+  if (!lvs.find(l=>l.key===curLevel)) curLevel = (lvs[0]||LEVELS[0]).key;
+  $("levelTabs").innerHTML = lvs.map(l =>
     `<button class="level-tab ${l.key===curLevel?'active':''}" onclick="setLevel('${l.key}')">${l.label}</button>`).join("");
   $("catList").innerHTML = CATEGORIES.map(c =>
     `<button class="cat-btn ${c.key===curCat?'active':''}" onclick="setCat('${c.key}')">${c.label}</button>`).join("");
@@ -539,7 +607,7 @@ async function loadResources(){
   const grid = $("resGrid");
   if (error){ grid.innerHTML = ""; return; }
   $("emptyHint").classList.toggle("hidden", data.length > 0);
-  const canDL = ["admin","manager"].includes(profile.role);
+  const canDL = userCanDL();
   window._resCache = Object.fromEntries(data.map(r => [r.id, r]));
 
   const structured = data.filter(r => partsOf(r));
@@ -601,7 +669,7 @@ async function openViewer(id){
   if (error) return alert("無法載入檔案：" + error.message);
   await log("view", r.id, { title:r.title });
   const url = data.signedUrl;
-  const canDL = ["admin","manager"].includes(profile.role);
+  const canDL = userCanDL();
   $("viewerDownload").classList.toggle("hidden", !canDL);
   $("viewerTitle").textContent = r.title;
   const body = $("viewerBody");
@@ -659,6 +727,7 @@ async function downloadCurrent(){ if (currentResource) doDownload(currentResourc
 
 /* ---------- 下載（僅 admin / manager） ---------- */
 async function doDownload(id){
+  if (!userCanDL()) return alert("您的帳號沒有下載權限，請聯繫總部。");
   const r = window._resCache[id] || currentResource; if (!r) return;
   const { data, error } = await db.storage.from("resources")
     .createSignedUrl(r.file_path, 300, { download: r.file_name });
@@ -731,18 +800,112 @@ async function loadUsers(){
   const { data, error } = await db.from("profiles").select("*")
     .order("status", { ascending:false }).order("created_at", { ascending:false });
   if (error) return;
-  $("usersPanel").innerHTML = `<table><thead><tr>
-    <th>姓名</th><th>Email</th><th>分校</th><th>電話</th><th>角色</th><th>狀態</th><th>操作</th>
+  window._userCache = Object.fromEntries(data.map(u => [u.id, u]));
+  const lvText = u => ["admin","manager"].includes(u.role) ? "全部"
+    : (!u.allowed_levels ? "全部" : (u.allowed_levels.length + " 個級別"));
+  $("usersPanel").innerHTML =
+    `<div style="margin-bottom:14px;"><button class="btn btn-primary btn-sm" onclick="openAddUser()">＋ 新增使用者</button></div>` +
+    `<table><thead><tr>
+    <th>姓名</th><th>Email</th><th>分校</th><th>電話</th><th>角色</th><th>可下載</th><th>可看級別</th><th>狀態</th><th>操作</th>
     </tr></thead><tbody>` + data.map(u => `<tr>
       <td>${esc(u.display_name||"")}</td><td>${esc(u.email)}</td>
       <td>${esc(u.branch_name||"")}</td><td>${esc(u.phone||"")}</td>
       <td><select onchange="setRole('${u.id}', this.value)" ${u.id===profile.id?"disabled":""}>
-        ${["branch","manager","admin"].map(r=>`<option value="${r}" ${u.role===r?"selected":""}>${ROLE_LABEL[r]}</option>`).join("")}
+        ${["branch","teacher","manager","admin"].map(r=>`<option value="${r}" ${u.role===r?"selected":""}>${ROLE_LABEL[r]}</option>`).join("")}
       </select></td>
+      <td style="text-align:center;">${["admin","manager"].includes(u.role) ? "✓"
+        : `<input type="checkbox" style="width:auto" ${u.can_download===true?"checked":""} onchange="setDL('${u.id}', this.checked)">`}</td>
+      <td>${lvText(u)} ${!["admin","manager"].includes(u.role) ? `<button class="btn btn-ghost btn-sm" onclick="openLevelEditor('${u.id}')">調整</button>` : ""}</td>
       <td><span class="pill ${u.status}">${{pending:"待審核",approved:"已核准",disabled:"停用"}[u.status]}</span></td>
       <td>${u.status!=="approved" ? `<button class="btn btn-primary btn-sm" onclick="setStatus('${u.id}','approved')">核准</button>` : ""}
           ${u.status==="approved" && u.id!==profile.id ? `<button class="btn btn-danger btn-sm" onclick="setStatus('${u.id}','disabled')">停用</button>` : ""}</td>
     </tr>`).join("") + "</tbody></table>";
+}
+/* ---------- 逐人權限 ---------- */
+async function setDL(id, on){
+  const { error } = await db.from("profiles").update({ can_download: on ? true : null }).eq("id", id);
+  if (error) return alert(error.message);
+  await log("perm_change", null, { target:id, can_download:on });
+}
+let _lvTarget = null;
+function openLevelEditor(id){
+  _lvTarget = id;
+  const cur = (window._userCache[id]||{}).allowed_levels;   // null = 全部
+  $("lvChecks").innerHTML = LEVELS.map(l => `<label style="display:flex;gap:8px;align-items:center;margin:7px 0;font-size:14px;">
+    <input type="checkbox" value="${l.key}" style="width:auto" ${(!cur || cur.includes(l.key)) ? "checked" : ""}> ${l.label}</label>`).join("");
+  $("levelModal").classList.remove("hidden");
+}
+async function saveLevels(){
+  const sel = [...document.querySelectorAll("#lvChecks input")].filter(b=>b.checked).map(b=>b.value);
+  const val = sel.length === LEVELS.length ? null : sel;
+  const { error } = await db.from("profiles").update({ allowed_levels: val }).eq("id", _lvTarget);
+  if (error) return alert(error.message);
+  await log("perm_change", null, { target:_lvTarget, allowed_levels:val });
+  $("levelModal").classList.add("hidden");
+  loadUsers();
+}
+/* ---------- 管理員直接建帳號 ---------- */
+function openAddUser(){
+  ["auEmail","auPwd","auName","auBranch","auPhone"].forEach(i=>$(i).value="");
+  $("auRole").value = "teacher"; $("auDL").checked = false;
+  $("auMsg").className = "msg";
+  $("addUserModal").classList.remove("hidden");
+}
+async function doAddUser(){
+  const email = $("auEmail").value.trim(), pwd = $("auPwd").value;
+  if (!email || !pwd) return showMsg($("auMsg"), "Email 與暫時密碼必填");
+  if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(pwd)) return showMsg($("auMsg"), "密碼需至少 8 碼且包含英文字母與數字");
+  $("auSubmit").disabled = true; $("auSubmit").textContent = "建立中…";
+  try {
+    const tmp = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY,
+      { auth:{ persistSession:false, autoRefreshToken:false } });
+    const { data, error } = await tmp.auth.signUp({ email, password: pwd,
+      options:{ data:{ display_name:$("auName").value.trim(), branch_name:$("auBranch").value.trim(), phone:$("auPhone").value.trim() } } });
+    if (error) throw error;
+    const uid = data.user && data.user.id;
+    if (!uid) throw new Error("建立失敗，請稍後再試");
+    let ok = false;
+    for (let i = 0; i < 10; i++){
+      const { data: d2, error: e2 } = await db.from("profiles")
+        .update({ role: $("auRole").value, status: "approved", can_download: $("auDL").checked ? true : null })
+        .eq("id", uid).select();
+      if (!e2 && d2 && d2.length){ ok = true; break; }
+      await new Promise(r => setTimeout(r, 700));
+    }
+    if (!ok) throw new Error("帳號已建立，但設定角色失敗，請在列表中手動核准");
+    await log("create_user", null, { email, role: $("auRole").value });
+    showMsg($("auMsg"), "帳號已建立！請把帳密交給對方（需先收 Email 驗證信點擊連結，才能登入）。", true);
+    loadUsers();
+  } catch(e){ showMsg($("auMsg"), "建立失敗：" + e.message); }
+  $("auSubmit").disabled = false; $("auSubmit").textContent = "建立帳號";
+}
+/* ---------- 個人資料自助更新 ---------- */
+function openProfileEdit(){
+  $("peName").value = profile.display_name || "";
+  $("peBranch").value = profile.branch_name || "";
+  $("pePhone").value = profile.phone || "";
+  $("peMsg").className = "msg";
+  $("profileModal").classList.remove("hidden");
+}
+async function saveProfile(){
+  const { error } = await db.rpc("update_my_profile", {
+    p_name: $("peName").value.trim(),
+    p_branch: $("peBranch").value.trim(),
+    p_phone: $("pePhone").value.trim() });
+  if (error) return showMsg($("peMsg"), "儲存失敗：" + error.message);
+  showMsg($("peMsg"), "已儲存！", true);
+  const { data } = await db.from("profiles").select("*").eq("id", profile.id).single();
+  if (data){ profile = data;
+    $("userName").textContent = (profile.display_name || profile.email) +
+      (profile.branch_name ? "｜" + profile.branch_name : ""); }
+}
+/* ---------- 變更密碼（所有人） ---------- */
+async function changePwd(){
+  const p = prompt("請輸入新密碼（至少 8 碼，含英文字母與數字）");
+  if (p === null) return;
+  if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(p)) return alert("密碼需至少 8 碼且包含英文字母與數字");
+  const { error } = await db.auth.updateUser({ password: p });
+  alert(error ? "變更失敗：" + error.message : "密碼已變更，下次請用新密碼登入");
 }
 async function setStatus(id, status){
   const { error } = await db.from("profiles").update({ status }).eq("id", id);
