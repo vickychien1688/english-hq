@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: v4.0 (teacher role + per-user permissions + admin user creation) -->
+<!-- build: v4.1 (folder-aware upload) -->
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -394,10 +394,21 @@
   <div class="modal">
     <h3>上傳資源</h3>
     <div class="field"><label>級別</label>
-      <select id="upLevel"></select></div>
+      <select id="upLevel" onchange="refreshUpWeeks()"></select></div>
     <div class="field"><label>分類</label>
-      <select id="upCategory"></select></div>
-    <div class="field"><label>標題</label><input id="upTitle" type="text" placeholder="例：Week1 Summer Vacation 教案"></div>
+      <select id="upCategory" onchange="refreshUpWeeks()"></select></div>
+    <div class="field"><label>週次資料夾</label>
+      <select id="upWeek" onchange="upWeekChanged()"></select></div>
+    <div class="field hidden" id="upNewWeekWrap"><label>新資料夾名稱</label>
+      <input id="upNewWeek" type="text" placeholder="例：Week 4: Space Adventure">
+      <p style="font-size:12px;color:var(--muted);margin-top:5px;">建議格式「Week 數字: 主題」，會自動配主題圖示並依週次排序。</p></div>
+    <div class="field hidden" id="upDayWrap"><label>單元（天）</label>
+      <select id="upDay">
+        <option value="">完整教案 & 學習單</option>
+        <option>Day 1</option><option>Day 2</option><option>Day 3</option>
+        <option>Day 4</option><option>Day 5</option>
+      </select></div>
+    <div class="field"><label>名稱</label><input id="upTitle" type="text" placeholder="例：教師手冊 Day 1、學習單 Day 2 Practice"></div>
     <div class="field"><label>說明（選填）</label><input id="upDesc" type="text"></div>
     <div class="field"><label>檔案</label><input id="upFile" type="file"></div>
     <div id="upMsg" class="msg"></div>
@@ -744,12 +755,36 @@ function openUpload(){
   $("upCategory").innerHTML = CATEGORIES.map(c=>`<option value="${c.key}" ${c.key===curCat?"selected":""}>${c.label}</option>`).join("");
   $("upMsg").className = "msg";
   $("uploadModal").classList.remove("hidden");
+  refreshUpWeeks();
+}
+/* 週次資料夾選單：列出該級別/分類現有資料夾＋可新增 */
+async function refreshUpWeeks(){
+  const { data } = await db.from("resources").select("title")
+    .eq("level", $("upLevel").value).eq("category", $("upCategory").value);
+  const weeks = [...new Set((data||[]).map(r => { const p = partsOf(r); return p && p.week; }).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  $("upWeek").innerHTML = `<option value="">（不放入資料夾）</option>` +
+    weeks.map(w=>`<option value="${esc(w)}" ${w===curWeek?"selected":""}>📁 ${esc(w)}</option>`).join("") +
+    `<option value="__new">＋ 新增週次資料夾…</option>`;
+  upWeekChanged();
+}
+function upWeekChanged(){
+  const v = $("upWeek").value;
+  $("upNewWeekWrap").classList.toggle("hidden", v !== "__new");
+  $("upDayWrap").classList.toggle("hidden", v === "");
 }
 function closeUpload(){ $("uploadModal").classList.add("hidden"); }
 async function doUpload(){
   const file = $("upFile").files[0];
-  const title = $("upTitle").value.trim();
-  if (!file || !title) return showMsg($("upMsg"), "請填寫標題並選擇檔案");
+  const name = $("upTitle").value.trim();
+  if (!file || !name) return showMsg($("upMsg"), "請填寫名稱並選擇檔案");
+  let week = $("upWeek").value;
+  if (week === "__new"){
+    week = $("upNewWeek").value.trim();
+    if (!week) return showMsg($("upMsg"), "請輸入新資料夾名稱");
+  }
+  const dayv = week ? $("upDay").value : "";
+  const title = week ? `${week}${dayv ? "・" + dayv : ""}｜${name}` : name;
   $("upSubmit").disabled = true; $("upSubmit").textContent = "上傳中…";
   try {
     const level = $("upLevel").value, category = $("upCategory").value;
