@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: hierarchy-nav v2 -->
+<!-- build: hierarchy-nav v3 (day-sort + day-grouping) -->
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -409,6 +409,23 @@ function partsOf(r){
   const [week, day] = left.split("・");
   return { week: week.trim(), day: (day||"完整教案 & 學習單").trim(), name: name.trim() };
 }
+function dayNum(s){ const m = String(s).match(/day\s*(\d+)/i); return m ? parseInt(m[1]) : 0; }
+/* Day N 頁面也納入「完整教案」資料夾中名稱含 Day N 的項目（學習單、教師手冊等） */
+function matchDay(r, d){
+  const p = partsOf(r);
+  if (p.day === d) return true;
+  if (!d.includes("完整教案") && p.day.includes("完整教案")){
+    const n = dayNum(d); return n > 0 && dayNum(p.name) === n;
+  }
+  return false;
+}
+function itemRank(n){ return /投影片/.test(n) ? 0 : /教師手冊/.test(n) ? 1 : 2; }
+/* 排序：Day 由小到大 → 投影片、教師手冊優先 → 名稱自然排序 */
+function sortItems(arr){
+  return arr.slice().sort((a,b)=>{ const pa=partsOf(a), pb=partsOf(b);
+    return dayNum(pa.name)-dayNum(pb.name) || itemRank(pa.name)-itemRank(pb.name)
+      || pa.name.localeCompare(pb.name,undefined,{numeric:true}); });
+}
 function crumb(){
   let h = `<a onclick="goHome()" style="cursor:pointer;color:var(--gold);font-weight:700;">全部週次</a>`;
   if (curWeek) h += ` <span style="color:var(--muted)">›</span> ` + (curDay
@@ -471,7 +488,7 @@ async function loadResources(){
     const dayOrder = d => d.includes("完整教案") ? 0 : (parseInt((d.match(/\d+/)||[9])[0]) || 9);
     const days = [...new Set(inWeek.map(r => partsOf(r).day))].sort((a,b)=>dayOrder(a)-dayOrder(b));
     grid.innerHTML = crumb() + `<div class="grid">` + days.map(d => {
-      const count = inWeek.filter(r => partsOf(r).day === d).length;
+      const count = inWeek.filter(r => matchDay(r, d)).length;
       return `<div class="res-card" style="cursor:pointer;text-align:center;padding:28px 16px;" onclick='goDay(${JSON.stringify(d)})'>
         <div style="font-size:34px;">${d.includes("完整教案") ? "📋" : "📅"}</div>
         <span class="res-title" style="margin:8px 0 2px;">${esc(d)}</span>
@@ -481,8 +498,8 @@ async function loadResources(){
     grid.style.display = "block";
     return;
   }
-  // 第三層：該天的資源
-  const items = inWeek.filter(r => partsOf(r).day === curDay);
+  // 第三層：該天的資源（含自動歸入的該日學習單／教師手冊，Day 由小到大排序）
+  const items = sortItems(inWeek.filter(r => matchDay(r, curDay)));
   grid.innerHTML = crumb() + `<div class="grid">` +
     items.map(r => resCard(r, canDL, partsOf(r).name)).join("") + `</div>`;
   grid.style.display = "block";
