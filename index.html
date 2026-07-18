@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: v4.3 (preset EOW Unit folders) -->
+<!-- build: v4.4 (teacher presentation mode) -->
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -8,7 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
 <meta name="theme-color" content="#0e2038">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="vendor/pdfjs/pdf.min.js"></script>
+<link rel="stylesheet" href="assets/teaching/teaching.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;900&family=Cormorant+Garamond:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
 <style>
@@ -429,9 +430,8 @@
 const SUPABASE_URL = "https://nvnrkzveyehcnlaszzin.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_8-cmiPFlZNzWu4VyhMA7dA_B0hteB1u";
 
+pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdfjs/pdf.worker.min.js";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 /* ---------- 常數 ---------- */
 const LEVELS = [
@@ -610,7 +610,8 @@ function resCard(r, canDL, label){
       <span class="res-meta">${esc(r.description||"")}</span>
       <span class="res-meta">${new Date(r.created_at).toLocaleDateString("zh-TW")}・${fmtSize(r.file_size)}</span>
       <div class="res-actions">
-        <button class="btn btn-primary btn-sm" onclick='openViewer(${JSON.stringify(r.id)})'>線上檢視</button>
+        ${["pdf","image"].includes(r.file_type) ? `<button class="btn btn-primary btn-sm" onclick='startTeaching(${JSON.stringify(r.id)})'>▶ 開始授課</button>` : ""}
+        <button class="btn ${["pdf","image"].includes(r.file_type) ? "btn-ghost" : "btn-primary"} btn-sm" onclick='openViewer(${JSON.stringify(r.id)})'>線上檢視</button>
         ${canDL ? `<button class="btn btn-ghost btn-sm" onclick='doDownload(${JSON.stringify(r.id)})'>下載</button>` : ""}
         ${canDL ? `<button class="btn btn-danger btn-sm" onclick='doDelete(${JSON.stringify(r.id)})'>刪除</button>` : ""}
       </div>
@@ -742,6 +743,17 @@ function closeViewer(){
   pdfDoc = null; currentResource = null;
 }
 async function downloadCurrent(){ if (currentResource) doDownload(currentResource.id); }
+
+/* ---------- 教師授課模式（Teaching Mode / Presentation Engine） ---------- */
+async function startTeaching(id){
+  const r = window._resCache[id]; if (!r) return;
+  const { data, error } = await db.storage.from("resources").createSignedUrl(r.file_path, 3600);
+  if (error) return alert("無法載入教材：" + error.message);
+  await log("teach", r.id, { title: r.title });
+  const p = partsOf(r);
+  Teaching.open({ id: r.id, title: p ? `${p.week}・${p.name}` : r.title,
+                  type: r.file_type, url: data.signedUrl });
+}
 
 /* ---------- 下載（僅 admin / manager） ---------- */
 async function doDownload(id){
@@ -981,7 +993,7 @@ async function loadLogs(){
   const { data, error } = await db.from("audit_log").select("*")
     .order("created_at", { ascending:false }).limit(300);
   if (error) return;
-  const AL = { login:"登入", register:"註冊", view:"線上檢視", download:"下載",
+  const AL = { login:"登入", register:"註冊", view:"線上檢視", teach:"開始授課", download:"下載",
                upload:"上傳", delete:"刪除", approve_user:"審核使用者", role_change:"變更角色" };
   $("logsPanel").innerHTML = `<table><thead><tr>
     <th>時間</th><th>使用者</th><th>動作</th><th>內容</th></tr></thead><tbody>` +
@@ -996,5 +1008,6 @@ async function loadLogs(){
 /* ---------- 進入點 ---------- */
 boot();
 </script>
+<script src="assets/teaching/teaching.js"></script>
 </body>
 </html>
