@@ -754,7 +754,17 @@ async function renderPdfPage(){
   const viewport = page.getViewport({ scale: scale * (window.devicePixelRatio||1) });
   canvas.width = viewport.width; canvas.height = viewport.height;
   canvas.style.width = (viewport.width / (window.devicePixelRatio||1)) + "px";
-  await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+  /* 若前一次渲染尚未完成，先取消，避免同一 canvas 重複 render 造成中斷 */
+  if (window.__pdfRenderTask) { try { window.__pdfRenderTask.cancel(); } catch (e) {} }
+  const renderTask = page.render({ canvasContext: canvas.getContext("2d"), viewport });
+  window.__pdfRenderTask = renderTask;
+  try {
+    await renderTask.promise;
+  } catch (e) {
+    if (e && e.name === "RenderingCancelledException") return; /* 被更新的一次渲染取代 */
+    throw e;
+  }
+  window.__pdfRenderTask = null;
   /* 重建可點擊連結層：讀取 PDF 內的超連結註解，疊上透明 <a>（新分頁開啟） */
   const linkLayer = $("pdfLinkLayer");
   if (linkLayer){
