@@ -710,9 +710,18 @@ async function openViewer(id){
   $("viewerModal").classList.remove("hidden");
 
   if (r.file_type === "pdf"){
+    /* 外層包一個定位容器，canvas 上疊「可點擊連結層」（讓 PDF 內的歌曲/影片連結在線上檢視也能點） */
+    const wrap = document.createElement("div");
+    wrap.id = "pdfWrap";
+    wrap.style.cssText = "position:relative;display:inline-block;line-height:0;";
     const canvas = document.createElement("canvas");
     canvas.id = "pdfCanvas";
-    body.appendChild(canvas);
+    wrap.appendChild(canvas);
+    const linkLayer = document.createElement("div");
+    linkLayer.id = "pdfLinkLayer";
+    linkLayer.style.cssText = "position:absolute;inset:0;";
+    wrap.appendChild(linkLayer);
+    body.appendChild(wrap);
     pdfDoc = await pdfjsLib.getDocument(url).promise;
     pdfPage = 1;
     $("pdfNav").classList.remove("hidden");
@@ -746,6 +755,26 @@ async function renderPdfPage(){
   canvas.width = viewport.width; canvas.height = viewport.height;
   canvas.style.width = (viewport.width / (window.devicePixelRatio||1)) + "px";
   await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+  /* 重建可點擊連結層：讀取 PDF 內的超連結註解，疊上透明 <a>（新分頁開啟） */
+  const linkLayer = $("pdfLinkLayer");
+  if (linkLayer){
+    linkLayer.innerHTML = "";
+    const dpr = window.devicePixelRatio || 1;
+    try {
+      const annots = await page.getAnnotations();
+      for (const an of annots){
+        if (an.subtype !== "Link" || !an.url) continue;
+        const [ax1, ay1, ax2, ay2] = viewport.convertToViewportRectangle(an.rect);
+        const a = document.createElement("a");
+        a.href = an.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+        a.title = an.url;
+        a.style.cssText = "position:absolute;cursor:pointer;" +
+          "left:" + (Math.min(ax1, ax2) / dpr) + "px;top:" + (Math.min(ay1, ay2) / dpr) + "px;" +
+          "width:" + (Math.abs(ax2 - ax1) / dpr) + "px;height:" + (Math.abs(ay2 - ay1) / dpr) + "px;";
+        linkLayer.appendChild(a);
+      }
+    } catch (e) { /* 註解讀取失敗時不影響閱讀 */ }
+  }
   $("pdfPageInfo").textContent = pdfPage + " / " + pdfDoc.numPages;
 }
 function pdfPrev(){ if (pdfDoc && pdfPage > 1){ pdfPage--; renderPdfPage(); } }
