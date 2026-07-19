@@ -72,6 +72,21 @@ window.Teaching = (function () {
     canvas.style.width = Math.floor(vp.width / dpr) + "px";
     canvas.style.height = Math.floor(vp.height / dpr) + "px";
     await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+    /* 收集 PDF 內的超連結註解（歌曲/影片連結），座標換算成 CSS px 存在 canvas 上 */
+    try {
+      const annots = await page.getAnnotations();
+      const links = [];
+      for (const an of annots) {
+        if (an.subtype !== "Link" || !an.url) continue;
+        const r = vp.convertToViewportRectangle(an.rect);
+        links.push({
+          url: an.url,
+          l: Math.min(r[0], r[2]) / dpr, t: Math.min(r[1], r[3]) / dpr,
+          w: Math.abs(r[2] - r[0]) / dpr, h: Math.abs(r[3] - r[1]) / dpr
+        });
+      }
+      canvas._links = links;
+    } catch (e) { canvas._links = []; }
     return canvas;
   };
   PdfSource.prototype.renderThumb = async function (n, widthPx) {
@@ -523,7 +538,25 @@ window.Teaching = (function () {
       clearTimeout(this._loadingTimer);
       this.hideLoading();
       this.el.tmWrap.innerHTML = "";
-      this.el.tmWrap.appendChild(canvas);
+      if (canvas._links && canvas._links.length) {
+        /* 疊「可點擊連結層」：PDF 內的歌曲/影片連結在授課模式也能點（新分頁開啟） */
+        const holder = document.createElement("div");
+        holder.style.cssText = "position:relative;line-height:0;";
+        holder.appendChild(canvas);
+        const layer = document.createElement("div");
+        layer.style.cssText = "position:absolute;inset:0;";
+        canvas._links.forEach(function (L) {
+          const a = document.createElement("a");
+          a.href = L.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.title = L.url;
+          a.style.cssText = "position:absolute;cursor:pointer;left:" + L.l + "px;top:" + L.t +
+            "px;width:" + L.w + "px;height:" + L.h + "px;";
+          layer.appendChild(a);
+        });
+        holder.appendChild(layer);
+        this.el.tmWrap.appendChild(holder);
+      } else {
+        this.el.tmWrap.appendChild(canvas);
+      }
       this.el.tmStage.classList.toggle("tm-zoomed", this.zoom > 1.001);
       this.updateZoomUi();
       this.updateThumbHighlight();
