@@ -554,6 +554,18 @@ function setCat(k){ curCat = k; curWeek = null; curDay = null; renderTabs(); loa
 function goWeek(w){ curWeek = w; curDay = null; loadResources(); }
 function goDay(d){ curDay = d; loadResources(); }
 function goHome(){ curWeek = null; curDay = null; loadResources(); }
+/* 回上一層：Day → 週次列表 → 全部週次；若該週只有單一子分類（進入時被自動跳層），返回時同樣跳過該層 */
+function goBack(){
+  if (curDay && curWeek){
+    const inWeek = Object.values(window._resCache||{}).filter(r => partsOf(r) && partsOf(r).week === curWeek);
+    const days = [...new Set(inWeek.map(r => partsOf(r).day))];
+    if (days.length <= 1) curWeek = null;
+    curDay = null;
+  } else if (curWeek){
+    curWeek = null; curDay = null;
+  }
+  loadResources();
+}
 
 /* 週次圖示：依主題關鍵字自動配對（新主題可在此加一行） */
 const THEME_ICONS = [
@@ -599,7 +611,8 @@ function crumb(){
   if (curWeek) h += ` <span style="color:var(--muted)">›</span> ` + (curDay
     ? `<a onclick="goWeek(${JSON.stringify(curWeek)})" style="cursor:pointer;color:var(--gold);font-weight:700;">${esc(curWeek)}</a> <span style="color:var(--muted)">›</span> <b>${esc(curDay)}</b>`
     : `<b>${esc(curWeek)}</b>`);
-  return `<div style="margin-bottom:14px;font-size:14px;">${h}</div>`;
+  const back = curWeek ? `<button class="btn btn-ghost btn-sm" onclick="goBack()" style="flex:none;">← 回上一層</button>` : "";
+  return `<div style="margin-bottom:14px;font-size:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">${back}<span>${h}</span></div>`;
 }
 const TYPE_ICO = { pdf:"📄", image:"🖼️", video:"🎬", audio:"🎧", ppt:"📊", doc:"📝", other:"📁" };
 function resCard(r, canDL, label){
