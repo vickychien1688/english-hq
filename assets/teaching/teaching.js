@@ -91,6 +91,59 @@ window.Teaching = (function () {
   };
 
   /* ----------------------------------------------------------
+     ImageSetSource — multi-image deck adapter
+     pages: [{url, label}] — each image is one slide; images are
+     loaded lazily so a 50-page deck opens instantly
+     ---------------------------------------------------------- */
+  function ImageSetSource(pages) {
+    this.pages = pages || [];
+    this.numPages = this.pages.length;
+    this._imgs = {};            // n -> HTMLImageElement (loaded)
+    this._loading = {};         // n -> Promise
+  }
+  ImageSetSource.prototype._img = function (n) {
+    if (this._imgs[n]) return Promise.resolve(this._imgs[n]);
+    if (this._loading[n]) return this._loading[n];
+    const self = this;
+    this._loading[n] = new Promise(function (resolve, reject) {
+      const img = new Image();
+      img.onload = function () { self._imgs[n] = img; delete self._loading[n]; resolve(img); };
+      img.onerror = function () { delete self._loading[n]; reject(new Error("圖片載入失敗 (第 " + n + " 頁)")); };
+      img.src = self.pages[n - 1].url;
+    });
+    return this._loading[n];
+  };
+  ImageSetSource.prototype.load = function () {
+    if (!this.numPages) return Promise.reject(new Error("此組沒有圖片"));
+    return this._img(1);        // open fast: only first slide up-front
+  };
+  ImageSetSource.prototype.pageSize = async function (n) {
+    const img = await this._img(n);
+    return { w: img.naturalWidth, h: img.naturalHeight };
+  };
+  ImageSetSource.prototype.render = async function (n, scale, dpr) {
+    const img = await this._img(n);
+    const w = Math.floor(img.naturalWidth * scale);
+    const h = Math.floor(img.naturalHeight * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.floor(w * dpr));
+    canvas.height = Math.max(1, Math.floor(h * dpr));
+    canvas.style.width = w + "px"; canvas.style.height = h + "px";
+    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas;
+  };
+  ImageSetSource.prototype.renderThumb = async function (n, widthPx) {
+    const img = await this._img(n);
+    const scale = widthPx / img.naturalWidth;
+    const canvas = document.createElement("canvas");
+    canvas.width = widthPx;
+    canvas.height = Math.max(1, Math.floor(img.naturalHeight * scale));
+    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas;
+  };
+  ImageSetSource.prototype.destroy = function () { this._imgs = {}; this._loading = {}; };
+
+  /* ----------------------------------------------------------
      ImageSource — single-slide image adapter
      ---------------------------------------------------------- */
   function ImageSource() {
@@ -205,7 +258,8 @@ window.Teaching = (function () {
           '<span class="tm-pageinfo">第 <input id="tmPageInput" type="text" inputmode="numeric" autocomplete="off"> / <span id="tmPageTotal">–</span> 頁</span>' +
           '<button class="tm-btn tm-nav-btn" id="tmNext">下一頁 ›</button>' +
         '</div>' +
-        '<div class="tm-toast" id="tmToast"></div>';
+        '<div class="tm-toast" id="tmToast"></div>' +
+        '<div class="tm-hint" id="tmHint">👈 左右滑動翻頁　・　輕點畫面顯示工具列 👆</div>';
       document.body.appendChild(root);
       this.root = root;
 
@@ -264,6 +318,17 @@ window.Teaching = (function () {
       /* touch swipe / pan (Pointer Events) */
       this.bindPointer();
 
+      /* control bars auto-hide when idle.
+         mouse: any movement wakes them (desktop habit)
+         touch/pen (IWB): ONLY a clean tap toggles them — swiping to flip
+         pages must never summon the toolbar */
+      root.addEventListener("pointermove", function (e) {
+        if (e.pointerType === "mouse") P.wakeBars();
+      });
+      root.addEventListener("pointerdown", function (e) {
+        if (e.target.closest(".tm-topbar") || e.target.closest(".tm-bottombar")) P.wakeBars();
+      });
+
       /* window resize → refit */
       this._onResize = function () {
         if (!P.open) return;
@@ -289,12 +354,14 @@ window.Teaching = (function () {
       this.root.classList.remove("hidden");
       document.body.style.overflow = "hidden";
       this.open = true;
+      this.wakeBars();
       this.showLoading("教材載入中…");
       window.addEventListener("keydown", this._onKey, true);
       window.addEventListener("resize", this._onResize);
 
       try {
         if (res.type === "pdf") this.src = new PdfSource();
+        else if (res.type === "imageset") this.src = new ImageSetSource(res.pages);
         else if (res.type === "image") this.src = new ImageSource();
         else throw new Error("此檔案格式（" + String(res.type).toUpperCase() + "）尚不支援授課模式");
         await this.src.load(res.url);
@@ -315,22 +382,35 @@ window.Teaching = (function () {
       this.el.tmTurnNext.style.display = multi ? "" : "none";
       this.el.tmThumbBtn.style.display = multi ? "" : "none";
 
-      /* resume from last position? */
+      /* start position: an explicitly clicked slide (startAt) wins;
+         otherwise offer to resume from the saved position */
       const saved = ProgressManager.get(res.id);
       let startPage = 1;
-      if (saved && saved.page > 1 && saved.page <= this.src.numPages) {
+      if (res.startAt && res.startAt > 1 && res.startAt <= this.src.numPages) {
+        startPage = res.startAt;
+      } else if (saved && saved.page > 1 && saved.page <= this.src.numPages) {
         startPage = saved.page;
         this.showResumeDialog(saved.page);
       }
       this.page = startPage;
       this.hideLoading();
       await this.refit();
+
+      /* brief touch hint so IWB teachers know the two gestures */
+      const hint = document.getElementById("tmHint");
+      if (hint && this.src.numPages > 1) {
+        hint.classList.add("tm-show");
+        clearTimeout(this._hintTimer);
+        this._hintTimer = setTimeout(function () { hint.classList.remove("tm-show"); }, 3200);
+      }
     },
 
     close: function () {
       if (!this.open) return;
       if (this.res && this.src && this.src.numPages) ProgressManager.set(this.res.id, this.page);
       if (Fullscreen.isActive()) Fullscreen.exit();
+      clearTimeout(this._idleTimer);
+      this.root.classList.remove("tm-idle");
       window.removeEventListener("keydown", this._onKey, true);
       window.removeEventListener("resize", this._onResize);
       this.teardownSource();
@@ -371,36 +451,48 @@ window.Teaching = (function () {
     /* ---------- layout / rendering ---------- */
     stageSize: function () {
       const r = this.el.tmStage.getBoundingClientRect();
-      /* small margin so the slide never touches the bezel */
-      return { w: Math.max(60, r.width - 16), h: Math.max(60, r.height - 16) };
+      /* edge-to-edge: the slide may use the entire stage */
+      return { w: Math.max(60, r.width), h: Math.max(60, r.height) };
+    },
+
+    /* ---------- control bars: wake / auto-hide ---------- */
+    wakeBars: function () {
+      this.root.classList.remove("tm-idle");
+      clearTimeout(this._idleTimer);
+      const self = this;
+      this._idleTimer = setTimeout(function () {
+        if (self.open) self.root.classList.add("tm-idle");
+      }, 3500);
+    },
+    hideBars: function () {
+      clearTimeout(this._idleTimer);
+      this.root.classList.add("tm-idle");
+    },
+    toggleBars: function () {
+      if (this.root.classList.contains("tm-idle")) this.wakeBars();
+      else this.hideBars();
     },
 
     refit: async function () {
       if (!this.src) return;
-      const size = await this.src.pageSize(this.page);
-      const st = this.stageSize();
-      /* fit entire page inside the stage — never cropped */
-      this.fitScale = Math.min(st.w / size.w, st.h / size.h);
-      this._cacheKey = "";   // invalidate cache (scale changed)
-      this._cache.clear();
+      this._cache.clear();   // stage size changed — re-render at new fit
       await this.show(this.page, true);
     },
 
-    cacheKeyNow: function () {
-      return this.fitScale.toFixed(4) + "@" + this.zoom.toFixed(3) + "x" + this.dpr;
-    },
-
-    renderScale: function () {
-      let s = this.fitScale * this.zoom;
-      /* cap canvas size to protect older classroom PCs */
-      return s;
+    /* fit-to-stage scale for page n — computed per page so image decks
+       with mixed page sizes are each fully visible (never cropped) */
+    fitFor: async function (n) {
+      const size = await this.src.pageSize(n);
+      const st = this.stageSize();
+      return Math.min(st.w / size.w, st.h / size.h);
     },
 
     getRendered: async function (n) {
-      const key = this.cacheKeyNow();
+      const fit = await this.fitFor(n);
+      const key = fit.toFixed(4) + "@" + this.zoom.toFixed(3) + "x" + this.dpr;
       const hit = this._cache.get(n);
       if (hit && hit.key === key) return hit.canvas;
-      const canvas = await this.src.render(n, this.renderScale(), this.dpr);
+      const canvas = await this.src.render(n, fit * this.zoom, this.dpr);
       this._cache.set(n, { canvas: canvas, key: key });
       /* simple LRU-ish trim */
       if (this._cache.size > CACHE_LIMIT) {
@@ -443,11 +535,7 @@ window.Teaching = (function () {
       const self = this;
       [n + 1, n - 1].forEach(function (m) {
         if (m >= 1 && m <= self.src.numPages) {
-          const key = self.cacheKeyNow();
-          const hit = self._cache.get(m);
-          if (!hit || hit.key !== key) {
-            self.getRendered(m).catch(function () {});
-          }
+          self.getRendered(m).catch(function () {});   // cache-aware
         }
       });
     },
@@ -595,6 +683,13 @@ window.Teaching = (function () {
         /* deliberate horizontal swipe: fast & mostly horizontal */
         if (Math.abs(dx) >= 56 && Math.abs(dx) > Math.abs(dy) * 1.4 && dt < 900) {
           if (dx < 0) P.next(); else P.prev();
+          return;
+        }
+        /* clean tap on the slide: touch/pen toggles the control bars
+           (mouse users wake them just by moving, so a mouse tap only hides) */
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8 && dt < 500) {
+          if (e.pointerType === "mouse") P.hideBars();
+          else P.toggleBars();
         }
       };
       stage.addEventListener("pointerup", end);
@@ -620,8 +715,18 @@ window.Teaching = (function () {
      ---------------------------------------------------------- */
   return {
     open: function (res) {
-      if (!res || !res.url || !res.id) { console.warn("Teaching.open: invalid resource"); return; }
-      return P.openResource(res);
+      const hasContent = res && (res.url || (Array.isArray(res.pages) && res.pages.length));
+      if (!res || !res.id || !hasContent) { console.warn("Teaching.open: invalid resource"); return; }
+      const p = P.openResource(res);   // makes #teachView visible synchronously
+      /* 上課模式：direct-to-fullscreen while we still hold the click's
+         user activation (best effort — some browsers/iPads may refuse) */
+      if (res.autoFullscreen !== false && Fullscreen.supported() && !Fullscreen.isActive()) {
+        try {
+          const fp = Fullscreen.enter(P.root);
+          if (fp && fp.catch) fp.catch(function () {});
+        } catch (e) { /* non-fatal */ }
+      }
+      return p;
     },
     close: function () { P.close(); },
     isOpen: function () { return P.open; }
