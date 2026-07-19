@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: v4.4 (teacher presentation mode) -->
+<!-- build: v4.5 (teacher presentation mode + image deck grouping) -->
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -745,12 +745,43 @@ function closeViewer(){
 async function downloadCurrent(){ if (currentResource) doDownload(currentResource.id); }
 
 /* ---------- 教師授課模式（Teaching Mode / Presentation Engine） ---------- */
+/* 同一資料夾的單張圖片（學習單頁、EOW 單元圖）自動合成一份可翻頁投影片組 */
+function teachingGroupOf(r){
+  if (r.file_type !== "image") return null;
+  const p = partsOf(r); if (!p) return null;
+  const dn = dayNum(p.name);
+  const group = Object.values(window._resCache).filter(x => {
+    if (x.file_type !== "image" || x.level !== r.level || x.category !== r.category) return false;
+    const q = partsOf(x);
+    return q && q.week === p.week && q.day === p.day && dayNum(q.name) === dn;
+  });
+  if (group.length < 2) return null;
+  /* 教學順序：單字 → 文法 → 閱讀 → 故事 → 練習 → 品德 → 寫作（其餘照自然排序） */
+  const SLIDE_ORDER = [/voc/i, /grammar/i, /reading/i, /story/i, /practice/i, /value/i, /writing/i];
+  const slideRank = n => { for (let i = 0; i < SLIDE_ORDER.length; i++) if (SLIDE_ORDER[i].test(n)) return i; return 9; };
+  return sortItems(group).sort((a, b) => slideRank(partsOf(a).name) - slideRank(partsOf(b).name));
+}
 async function startTeaching(id){
   const r = window._resCache[id]; if (!r) return;
+  const p = partsOf(r);
+  const group = teachingGroupOf(r);
+  if (group){
+    const { data, error } = await db.storage.from("resources")
+      .createSignedUrls(group.map(g => g.file_path), 3600);
+    if (error) return alert("無法載入教材：" + error.message);
+    const pages = data.map((d, i) => ({ url: d.signedUrl, label: partsOf(group[i]).name }));
+    const dn = dayNum(p.name);
+    const deckId = ["deck", r.level, r.category, p.week, dn].join("|");
+    await log("teach", r.id, { title: `${p.week}${dn ? "・Day " + dn : ""}｜圖片投影組（${pages.length} 頁）` });
+    Teaching.open({ id: deckId,
+                    title: `${p.week}${dn ? "・Day " + dn : ""}（${pages.length} 頁）`,
+                    type: "imageset", pages,
+                    startAt: group.findIndex(g => g.id === r.id) + 1 });
+    return;
+  }
   const { data, error } = await db.storage.from("resources").createSignedUrl(r.file_path, 3600);
   if (error) return alert("無法載入教材：" + error.message);
   await log("teach", r.id, { title: r.title });
-  const p = partsOf(r);
   Teaching.open({ id: r.id, title: p ? `${p.week}・${p.name}` : r.title,
                   type: r.file_type, url: data.signedUrl });
 }
