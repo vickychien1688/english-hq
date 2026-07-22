@@ -885,18 +885,24 @@ async function buildReplacedPdf(r, pageNo, file){
   if (pageNo < 1 || pageNo > doc.getPageCount()) throw new Error("頁碼超出範圍");
   const idx = pageNo - 1;
   const { width, height } = doc.getPage(idx).getSize();
-  if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)){
-    const repDoc = await PDFLib.PDFDocument.load(await file.arrayBuffer());
+  /* 依檔案實際內容（magic bytes）判斷格式，避免副檔名與內容不符（如 .jpg 其實是 PNG） */
+  const rawBuf = await file.arrayBuffer();
+  const u8 = new Uint8Array(rawBuf);
+  const isPdfFile = u8.length > 4 && u8[0] === 0x25 && u8[1] === 0x50 && u8[2] === 0x44 && u8[3] === 0x46; /* %PDF */
+  if (isPdfFile){
+    const repDoc = await PDFLib.PDFDocument.load(rawBuf);
     const [np] = await doc.copyPages(repDoc, [0]);
     doc.removePage(idx);
     doc.insertPage(idx, np);
   } else {
     let img;
-    if (/jpe?g$/i.test(file.type) || /\.jpe?g$/i.test(file.name)){
-      img = await doc.embedJpg(await file.arrayBuffer());
-    } else if (file.type === "image/png" || /\.png$/i.test(file.name)){
-      img = await doc.embedPng(await file.arrayBuffer());
-    } else { /* webp 等其他格式先轉 PNG */
+    const isJpg = u8.length > 3 && u8[0] === 0xFF && u8[1] === 0xD8 && u8[2] === 0xFF;
+    const isPng = u8.length > 8 && u8[0] === 0x89 && u8[1] === 0x50 && u8[2] === 0x4E && u8[3] === 0x47;
+    try {
+      if (isJpg) img = await doc.embedJpg(rawBuf);
+      else if (isPng) img = await doc.embedPng(rawBuf);
+      else throw new Error("unknown image format");
+    } catch(_e){ /* 其他格式或嵌入失敗：用 canvas 重繪成 PNG 再嵌入（一定成功） */
       const png = await toCanvasBlob(file, "image/png");
       img = await doc.embedPng(await png.arrayBuffer());
     }
