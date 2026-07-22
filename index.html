@@ -324,6 +324,9 @@
 <div id="viewerModal" class="hidden" oncontextmenu="return false;">
   <div class="viewer-bar">
     <span class="vtitle" id="viewerTitle"></span>
+    <button id="viewerPageDL" class="btn btn-ghost btn-sm hidden" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="downloadCurrentPage()">⬇ 下載此頁</button>
+    <button id="viewerReplace" class="btn btn-ghost btn-sm hidden" style="color:#ffd88a;border-color:rgba(255,216,138,.45)" onclick="pickReplace()">🔄 替換此頁</button>
+    <input id="replaceFile" type="file" class="hidden" onchange="onReplaceFile(this)">
     <button id="viewerDownload" class="btn btn-primary btn-sm hidden" onclick="downloadCurrent()">下載</button>
     <button class="btn btn-ghost btn-sm" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="closeViewer()">✕ 關閉</button>
   </div>
@@ -703,6 +706,10 @@ async function openViewer(id){
   const url = data.signedUrl;
   const canDL = userCanDL();
   $("viewerDownload").classList.toggle("hidden", !canDL);
+  /* 單頁下載（PDF）與單頁替換（PDF／圖片），僅總部管理員・教務可見 */
+  $("viewerPageDL").classList.toggle("hidden", !(canDL && r.file_type === "pdf"));
+  $("viewerReplace").classList.toggle("hidden", !(canManage() && ["pdf","image"].includes(r.file_type)));
+  $("viewerReplace").textContent = r.file_type === "image" ? "🔄 替換圖片" : "🔄 替換此頁";
   $("viewerTitle").textContent = r.title;
   const body = $("viewerBody");
   body.innerHTML = "";
@@ -795,6 +802,169 @@ function closeViewer(){
   pdfDoc = null; currentResource = null;
 }
 async function downloadCurrent(){ if (currentResource) doDownload(currentResource.id); }
+
+/* ---------- 單頁下載／單頁替換（總部管理員・教務） ---------- */
+function canManage(){ return profile && ["admin","manager"].includes(profile.role); }
+
+/* pdf-lib 延遲載入（只有用到替換功能才載，不拖慢首頁） */
+let _pdfLibReady = null;
+function loadPdfLib(){
+  if (window.PDFLib) return Promise.resolve();
+  if (!_pdfLibReady) _pdfLibReady = new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "vendor/pdf-lib/pdf-lib.min.js";
+    s.onload = res; s.onerror = () => rej(new Error("pdf-lib 元件載入失敗，請重新整理再試"));
+    document.head.appendChild(s);
+  });
+  return _pdfLibReady;
+}
+
+/* 下載 PDF 目前頁為 PNG 圖片（可直接拿去修改） */
+async function downloadCurrentPage(){
+  if (!currentResource || !pdfDoc) return;
+  if (!userCanDL()) return alert("您的帳號沒有下載權限，請聯繫總部。");
+  const r = currentResource, pageNo = pdfPage;
+  const btn = $("viewerPageDL"), oldTxt = btn.textContent;
+  btn.disabled = true; btn.textContent = "轉檔中…";
+  try {
+    const page = await pdfDoc.getPage(pageNo);
+    const base = page.getViewport({ scale: 1 });
+    /* 輸出約 2000px 寬的高解析度圖；設上限避免超大掃描頁 render 卡死 */
+    const scale = Math.max(1, Math.min(2000 / base.width, 2600 / base.height, 4));
+    const vp = page.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+    if (!blob) throw new Error("圖片轉檔失敗");
+    const stem = (r.file_name || "page").replace(/\.[^.]+$/, "");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = stem + "_p" + String(pageNo).padStart(2, "0") + ".png";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+    await log("download_page", r.id, { title: r.title, page: pageNo });
+  } catch(e){ alert("下載此頁失敗：" + e.message); }
+  btn.disabled = false; btn.textContent = oldTxt;
+}
+
+/* 把上傳圖片轉成指定格式（用 canvas 重繪） */
+function toCanvasBlob(file, mime, quality){
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext("2d").drawImage(img, 0, 0);
+      URL.revokeObjectURL(img.src);
+      c.toBlob(b => b ? res(b) : rej(new Error("圖片轉檔失敗")), mime, quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(img.src); rej(new Error("無法讀取圖片檔")); };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+/* 圖片資源替換：新圖自動轉成與原檔相同的格式（路徑副檔名不變） */
+async function matchImageFormat(file, path){
+  const ext = (path.split(".").pop() || "").toLowerCase();
+  const want = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+  if (ext === "gif") return { blob: file, contentType: file.type || "image/gif" };
+  if (file.type === want) return { blob: file, contentType: want };
+  const q = want === "image/jpeg" ? 0.92 : undefined;
+  return { blob: await toCanvasBlob(file, want, q), contentType: want };
+}
+
+/* PDF 換頁：抓原檔 → 用 pdf-lib 把第 N 頁換成上傳的圖片（或單頁 PDF）→ 產出新 PDF */
+async function buildReplacedPdf(r, pageNo, file){
+  await loadPdfLib();
+  const { data, error } = await db.storage.from("resources").createSignedUrl(r.file_path, 600);
+  if (error) throw error;
+  const resp = await fetch(data.signedUrl);
+  if (!resp.ok) throw new Error("原始 PDF 下載失敗（" + resp.status + "）");
+  const doc = await PDFLib.PDFDocument.load(await resp.arrayBuffer());
+  if (pageNo < 1 || pageNo > doc.getPageCount()) throw new Error("頁碼超出範圍");
+  const idx = pageNo - 1;
+  const { width, height } = doc.getPage(idx).getSize();
+  if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)){
+    const repDoc = await PDFLib.PDFDocument.load(await file.arrayBuffer());
+    const [np] = await doc.copyPages(repDoc, [0]);
+    doc.removePage(idx);
+    doc.insertPage(idx, np);
+  } else {
+    let img;
+    if (/jpe?g$/i.test(file.type) || /\.jpe?g$/i.test(file.name)){
+      img = await doc.embedJpg(await file.arrayBuffer());
+    } else if (file.type === "image/png" || /\.png$/i.test(file.name)){
+      img = await doc.embedPng(await file.arrayBuffer());
+    } else { /* webp 等其他格式先轉 PNG */
+      const png = await toCanvasBlob(file, "image/png");
+      img = await doc.embedPng(await png.arrayBuffer());
+    }
+    doc.removePage(idx);
+    const page = doc.insertPage(idx, [width, height]);
+    const s = Math.min(width / img.width, height / img.height);
+    const w = img.width * s, h = img.height * s;
+    page.drawImage(img, { x: (width - w) / 2, y: (height - h) / 2, width: w, height: h });
+  }
+  return new Blob([await doc.save()], { type: "application/pdf" });
+}
+
+/* 上傳替換檔：先試原路徑直接覆蓋；被權限擋下時改走「存新檔＋換卡片」流程 */
+async function uploadReplacement(r, blob, contentType){
+  const { error } = await db.storage.from("resources")
+    .upload(r.file_path, blob, { upsert: true, contentType });
+  if (!error){ r.file_size = blob.size; return r; }
+  const safeName = (r.file_name || r.file_path.split("/").pop()).replace(/[^\w.\-]+/g, "_");
+  const newPath = `${r.level}/${r.category}/${Date.now()}_${safeName}`;
+  const { error: e2 } = await db.storage.from("resources").upload(newPath, blob, { contentType });
+  if (e2) throw new Error("覆蓋原檔失敗（" + error.message + "），另存新檔也失敗（" + e2.message + "）");
+  const { data: row, error: e3 } = await db.from("resources").insert({
+    level: r.level, category: r.category, title: r.title, description: r.description,
+    file_path: newPath, file_name: r.file_name, file_type: r.file_type,
+    file_size: blob.size, uploaded_by: r.uploaded_by || profile.id, created_at: r.created_at
+  }).select().single();
+  if (e3) throw e3;
+  await db.from("resources").delete().eq("id", r.id);
+  await db.storage.from("resources").remove([r.file_path]);
+  delete window._resCache[r.id];
+  window._resCache[row.id] = row;
+  return row;
+}
+
+function pickReplace(){
+  if (!currentResource) return;
+  if (!canManage()) return alert("此功能僅限總部管理員／教務使用。");
+  const inp = $("replaceFile");
+  inp.accept = currentResource.file_type === "image"
+    ? ".png,.jpg,.jpeg,.webp" : ".png,.jpg,.jpeg,.webp,.pdf";
+  inp.value = "";
+  inp.click();
+}
+
+async function onReplaceFile(inp){
+  const file = inp.files[0]; if (!file || !currentResource) return;
+  const r = currentResource;
+  const isPdf = r.file_type === "pdf";
+  const what = isPdf ? `「${r.title}」第 ${pdfPage} 頁` : `「${r.title}」這張圖`;
+  if (!confirm(`確定用「${file.name}」替換 ${what}？\n\n替換後所有人看到的都會是新版本，原內容將被覆蓋，無法復原。`)) return;
+  const btn = $("viewerReplace"), oldTxt = btn.textContent;
+  btn.disabled = true; btn.textContent = "替換中…";
+  const keepPage = pdfPage;
+  try {
+    let payload;
+    if (isPdf) payload = { blob: await buildReplacedPdf(r, keepPage, file), contentType: "application/pdf" };
+    else payload = await matchImageFormat(file, r.file_path);
+    const nr = await uploadReplacement(r, payload.blob, payload.contentType);
+    await log("replace_page", nr.id, { title: nr.title, page: isPdf ? keepPage : null, file: file.name });
+    btn.disabled = false; btn.textContent = oldTxt;
+    alert("替換成功！");
+    loadResources();
+    await openViewer(nr.id);   /* 重新載入新版內容 */
+    if (isPdf && pdfDoc){ pdfPage = Math.min(keepPage, pdfDoc.numPages); renderPdfPage(); }
+    return;
+  } catch(e){ alert("替換失敗：" + e.message); }
+  btn.disabled = false; btn.textContent = oldTxt;
+}
 
 /* ---------- 教師授課模式（Teaching Mode / Presentation Engine） ---------- */
 /* 同一資料夾的單張圖片（學習單頁、EOW 單元圖）自動合成一份可翻頁投影片組 */
