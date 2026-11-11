@@ -123,6 +123,7 @@
   #pdfCanvas { max-width:100%; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,.4); }
   .viewer-body img { max-width:100%; max-height:100%; object-fit:contain; }
   .viewer-body video { max-width:100%; max-height:calc(100vh - 120px); }
+  .viewer-body iframe.yt { width:min(100%, calc((100vh - 110px) * 16 / 9)); aspect-ratio:16/9; border:0; background:#000; }
   .pdf-nav { display:flex; align-items:center; justify-content:center; gap:16px; padding:10px; color:#fff; }
   .pdf-nav button { background:rgba(255,255,255,.15); color:#fff; border:none;
     border-radius:8px; padding:8px 16px; font-size:14px; }
@@ -418,6 +419,8 @@
     <div class="field"><label>名稱</label><input id="upTitle" type="text" placeholder="例：教師手冊 Day 1、學習單 Day 2 Practice"></div>
     <div class="field"><label>說明（選填）</label><input id="upDesc" type="text"></div>
     <div class="field"><label>檔案</label><input id="upFile" type="file"></div>
+    <div class="field"><label>或貼上 YouTube 影片連結（不用選檔案）</label>
+      <input id="upLink" type="url" placeholder="例：https://youtu.be/xxxxxxxxxxx"></div>
     <div id="upMsg" class="msg"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeUpload()">取消</button>
@@ -484,6 +487,12 @@ function extType(name){
   if (["ppt","pptx"].includes(e)) return "ppt";
   if (["doc","docx"].includes(e)) return "doc";
   return "other";
+}
+/* 影片連結卡片：file_path 存的是網址（YouTube），不是 Storage 裡的檔案 */
+function isLink(r){ return /^https?:\/\//i.test(r.file_path || ""); }
+function ytId(url){
+  const m = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/);
+  return m ? m[1] : null;
 }
 async function log(action, resource_id=null, detail={}){
   try {
@@ -620,6 +629,17 @@ function crumb(){
 }
 const TYPE_ICO = { pdf:"📄", image:"🖼️", video:"🎬", audio:"🎧", ppt:"📊", doc:"📝", other:"📁" };
 function resCard(r, canDL, label){
+  if (isLink(r)) return `
+    <div class="res-card">
+      <span class="res-type">🎬 影片連結</span>
+      <span class="res-title">${esc(label)}</span>
+      <span class="res-meta">${esc(r.description||"")}</span>
+      <span class="res-meta">${new Date(r.created_at).toLocaleDateString("zh-TW")}・YouTube</span>
+      <div class="res-actions">
+        <button class="btn btn-primary btn-sm" onclick='openViewer(${JSON.stringify(r.id)})'>▶ 播放影片</button>
+        ${canManage() ? `<button class="btn btn-danger btn-sm" onclick='doDelete(${JSON.stringify(r.id)})'>刪除</button>` : ""}
+      </div>
+    </div>`;
   return `
     <div class="res-card">
       <span class="res-type">${TYPE_ICO[r.file_type]||"📁"} ${r.file_type.toUpperCase()}</span>
@@ -701,6 +721,33 @@ function fmtSize(b){ if(!b) return ""; return b > 1048576 ? (b/1048576).toFixed(
 async function openViewer(id){
   const r = window._resCache[id]; if (!r) return;
   currentResource = r;
+  if (isLink(r)){
+    await log("view", r.id, { title:r.title });
+    ["viewerDownload","viewerPageDL","viewerReplace"].forEach(i => $(i).classList.add("hidden"));
+    $("viewerTitle").textContent = r.title;
+    const body = $("viewerBody");
+    body.innerHTML = "";
+    $("pdfNav").classList.add("hidden");
+    $("viewerModal").classList.remove("hidden");
+    const vid = ytId(r.file_path);
+    if (vid){
+      const f = document.createElement("iframe");
+      f.className = "yt";
+      f.src = "https://www.youtube.com/embed/" + vid + "?autoplay=1&rel=0&playsinline=1&cc_load_policy=0&enablejsapi=1&origin=" + encodeURIComponent(location.origin);
+      f.allow = "autoplay; encrypted-media; fullscreen; picture-in-picture";
+      f.allowFullscreen = true;
+      f.referrerPolicy = "strict-origin-when-cross-origin";
+      /* 關掉 YouTube 字幕（影片本身已有字幕，不要再疊一層）；播放器載入需要時間，所以多送幾次 */
+      const ccOff = () => { if (!f.contentWindow) return;
+        ["captions","cc"].forEach(m => f.contentWindow.postMessage(
+          JSON.stringify({ event:"command", func:"unloadModule", args:[m] }), "https://www.youtube.com")); };
+      f.addEventListener("load", () => [0, 800, 2000, 4000, 8000].forEach(t => setTimeout(ccOff, t)));
+      body.appendChild(f);
+    } else {
+      body.innerHTML = `<div class="no-preview">這是一個外部連結。<br><a href="${esc(r.file_path)}" target="_blank" rel="noopener" style="color:#ffd88a;font-size:18px;">點這裡開啟</a></div>`;
+    }
+    return;
+  }
   const { data, error } = await db.storage.from("resources").createSignedUrl(r.file_path, 3600);
   if (error) return alert("無法載入檔案：" + error.message);
   await log("view", r.id, { title:r.title });
@@ -1019,6 +1066,7 @@ async function startTeaching(id){
 async function doDownload(id){
   if (!userCanDL()) return alert("您的帳號沒有下載權限，請聯繫總部。");
   const r = window._resCache[id] || currentResource; if (!r) return;
+  if (isLink(r)) return alert("這是影片連結，沒有檔案可以下載。");
   const { data, error } = await db.storage.from("resources")
     .createSignedUrl(r.file_path, 300, { download: r.file_name });
   if (error) return alert("下載失敗：" + error.message);
@@ -1068,7 +1116,10 @@ function closeUpload(){ $("uploadModal").classList.add("hidden"); }
 async function doUpload(){
   const file = $("upFile").files[0];
   const name = $("upTitle").value.trim();
-  if (!file || !name) return showMsg($("upMsg"), "請填寫名稱並選擇檔案");
+  const link = $("upLink").value.trim();
+  if (link && file) return showMsg($("upMsg"), "檔案和影片連結請擇一");
+  if (link && !ytId(link)) return showMsg($("upMsg"), "這不像 YouTube 影片連結，請再確認");
+  if ((!file && !link) || !name) return showMsg($("upMsg"), "請填寫名稱，並選擇檔案或貼上影片連結");
   let week = $("upWeek").value;
   if (week === "__new"){
     week = $("upNewWeek").value.trim();
@@ -1083,19 +1134,25 @@ async function doUpload(){
   $("upSubmit").disabled = true; $("upSubmit").textContent = "上傳中…";
   try {
     const level = $("upLevel").value, category = $("upCategory").value;
-    const safeName = file.name.replace(/[^\w.\-]+/g, "_");
-    const path = `${level}/${category}/${Date.now()}_${safeName}`;
-    const { error: upErr } = await db.storage.from("resources").upload(path, file);
-    if (upErr) throw upErr;
+    let path, fileName, fileType, fileSize;
+    if (link){
+      path = "https://youtu.be/" + ytId(link); fileName = "YouTube"; fileType = "video"; fileSize = 0;
+    } else {
+      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+      path = `${level}/${category}/${Date.now()}_${safeName}`;
+      const { error: upErr } = await db.storage.from("resources").upload(path, file);
+      if (upErr) throw upErr;
+      fileName = file.name; fileType = extType(file.name); fileSize = file.size;
+    }
     const { data: row, error: insErr } = await db.from("resources").insert({
       level, category, title, description: $("upDesc").value.trim(),
-      file_path: path, file_name: file.name, file_type: extType(file.name),
-      file_size: file.size, uploaded_by: profile.id
+      file_path: path, file_name: fileName, file_type: fileType,
+      file_size: fileSize, uploaded_by: profile.id
     }).select().single();
     if (insErr) throw insErr;
-    await log("upload", row.id, { title, file: file.name });
-    showMsg($("upMsg"), "上傳成功！", true);
-    $("upTitle").value = ""; $("upDesc").value = ""; $("upFile").value = "";
+    await log("upload", row.id, { title, file: fileName });
+    showMsg($("upMsg"), link ? "已加入影片連結！" : "上傳成功！", true);
+    $("upTitle").value = ""; $("upDesc").value = ""; $("upFile").value = ""; $("upLink").value = "";
     curLevel = level; curCat = category;
     renderTabs(); loadResources();
   } catch(e){ showMsg($("upMsg"), "上傳失敗：" + e.message); }
@@ -1108,7 +1165,7 @@ async function doDelete(id){
   if (!confirm(`確定刪除「${r.title}」？`)) return;
   const { error } = await db.from("resources").delete().eq("id", id);
   if (error) return alert("刪除失敗：" + error.message);
-  await db.storage.from("resources").remove([r.file_path]);
+  if (!isLink(r)) await db.storage.from("resources").remove([r.file_path]);
   await log("delete", id, { title:r.title });
   loadResources();
 }
