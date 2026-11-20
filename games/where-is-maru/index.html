@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Where Is Maru? 三關大冒險</title>
+<title>Where Is Maru? 闖關大冒險</title>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#3a2a1a;--cream:#fff8ec;--pink:#ff7aa8;--red:#e8382f;--blue:#3d7bd9;--green:#3bb36b;--gold:#ffc83d}
@@ -28,12 +28,12 @@ main{flex:1;position:relative;overflow:hidden}
 .spk{border:0;background:var(--blue);color:#fff;width:clamp(64px,8vw,96px);height:clamp(64px,8vw,96px);border-radius:50%;font-size:clamp(30px,4vw,46px);box-shadow:0 6px 0 #2a59a3;cursor:pointer}
 .spk:active{transform:translateY(4px);box-shadow:0 2px 0 #2a59a3}
 /* map */
-.map{display:flex;gap:clamp(12px,3vw,48px);align-items:flex-end;justify-content:center;flex-wrap:wrap}
-.stop{border:0;background:#fff;border-radius:28px;width:clamp(180px,24vw,300px);padding:16px 12px 18px;box-shadow:0 8px 0 #ead6b3;cursor:pointer;font:inherit;color:var(--ink);position:relative;transition:transform .15s}
+.map{display:flex;gap:clamp(10px,1.6vw,26px);align-items:flex-end;justify-content:center;flex-wrap:wrap}
+.stop{border:0;background:#fff;border-radius:24px;width:clamp(120px,14.5vw,210px);padding:12px 8px 12px;box-shadow:0 8px 0 #ead6b3;cursor:pointer;font:inherit;color:var(--ink);position:relative;transition:transform .15s}
 .stop:active{transform:translateY(4px)}
-.stop img{width:min(70%,24vh);aspect-ratio:1;object-fit:contain}
-.stop .n{position:absolute;top:-16px;left:-10px;background:var(--gold);width:52px;height:52px;border-radius:50%;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #d9a520}
-.stop b{display:block;font-size:clamp(20px,2.4vw,30px)}
+.stop img{width:min(72%,17vh);aspect-ratio:1;object-fit:contain}
+.stop .n{position:absolute;top:-14px;left:-8px;background:var(--gold);width:44px;height:44px;border-radius:50%;font-size:26px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #d9a520}
+.stop b{display:block;font-size:clamp(16px,1.8vw,26px);white-space:nowrap}
 .stop small{display:block;font-size:clamp(14px,1.6vw,20px);opacity:.75}
 .stop.locked{filter:grayscale(1);opacity:.55}
 .stop.locked::after{content:"🔒";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px}
@@ -97,6 +97,37 @@ main{flex:1;position:relative;overflow:hidden}
 #vbox{position:fixed;inset:0;background:rgba(30,20,10,.85);z-index:70;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px}
 #vbox.on{display:flex}
 #vbox iframe{width:min(92vw,150vh);aspect-ratio:16/9;border:0;border-radius:18px;background:#000}
+/* find japan */
+.mapbox{position:relative;width:min(92vw,108vh,1000px);border-radius:24px;overflow:hidden;box-shadow:0 6px 0 #ead6b3}
+.mapbox svg{display:block;width:100%;height:auto}
+.mapbox .zone{position:absolute;border:0;background:transparent;cursor:pointer;border-radius:50%}
+.mapbox .zone.hint{animation:glow 1.2s infinite}
+@keyframes glow{50%{box-shadow:0 0 0 8px rgba(255,200,61,.8)}}
+#plane{position:absolute;width:12%;left:38%;top:70%;display:none;transition:left 1.6s ease-in-out,top 1.6s ease-in-out;z-index:3}
+.hello{position:relative;width:min(50vw,52vh,440px)}
+.hello img{width:100%}
+.hearts{font-size:clamp(30px,4vw,54px);min-height:1.3em}
+/* match */
+.match{position:relative;display:flex;justify-content:space-between;width:min(92vw,120vh,1000px);gap:20px}
+.match .col{display:flex;flex-direction:column;gap:clamp(8px,1.4vh,16px);width:30%;z-index:2}
+.match .pic,.match .word{border:0;background:#fff;border-radius:20px;box-shadow:0 5px 0 #ead6b3;cursor:pointer;font:inherit;color:var(--ink);height:clamp(70px,15vh,130px);display:flex;align-items:center;justify-content:center}
+.match .pic img{height:88%;aspect-ratio:1;object-fit:contain}
+.match .word{font-size:clamp(20px,min(3vw,4.4vh),40px);font-weight:800}
+.match .sel{outline:6px solid var(--gold)}
+.match .done{outline:5px solid var(--green);background:#eafff0;pointer-events:none}
+#lines{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+/* memory */
+.mem{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(8px,1.4vw,18px);width:min(92vw,84vh,900px)}
+.mc{border:0;background:transparent;aspect-ratio:1;perspective:800px;cursor:pointer;padding:0}
+.mc .in{position:relative;width:100%;height:100%;transition:transform .35s;transform-style:preserve-3d}
+.mc.flip .in{transform:rotateY(180deg)}
+.mc .fa,.mc .ba{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 0 #ead6b3}
+.mc .ba{background:#ff9fbf url(img/maru_peek.png) center/62% no-repeat}
+.mc .fa{background:#fff;transform:rotateY(180deg);font-weight:800;font-size:clamp(16px,min(2.2vw,3.4vh),30px);text-align:center;padding:4px}
+.mc .fa img{width:84%;height:84%;object-fit:contain}
+.mc.got .fa{outline:5px solid var(--green)}
+.g7{grid-template-columns:repeat(7,minmax(0,1fr));width:min(96vw,175vh,1400px)}
+.g7 .card span{white-space:normal;text-align:center}
 @media (max-width:700px){.g4{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -104,7 +135,7 @@ main{flex:1;position:relative;overflow:hidden}
 <div id="app">
 <header>
   <button class="hbtn" id="homeBtn">🏠 Map</button>
-  <h1>Where Is Maru? 三關大冒險</h1>
+  <h1>Where Is Maru? 闖關大冒險</h1>
   <div class="stars">⭐ <span id="starN">0</span></div>
 </header>
 <main>
@@ -114,17 +145,48 @@ main{flex:1;position:relative;overflow:hidden}
     <p class="big">Help find Maru!</p>
     <button class="watch" id="watchBtn">▶ 先看影片 Watch the video</button>
     <div class="map">
-      <button class="stop" data-go="1"><div class="n">1</div><span class="done">✅</span><img src="img/w_cat.png" alt=""><b>Word Treasure</b><small>單字寶箱</small></button>
-      <button class="stop locked" data-go="2"><div class="n">2</div><span class="done">✅</span><img src="img/doors_icon.png" alt=""><b>Knock, Knock!</b><small>敲敲門找 Maru</small></button>
-      <button class="stop locked" data-go="3"><div class="n">3</div><span class="done">✅</span><img src="img/w_sun.png" alt=""><b>Season Chant</b><small>四季大挑戰</small></button>
+      <button class="stop" data-go="1"><div class="n">1</div><span class="done">✅</span><img src="img/w_japan.png" alt=""><b>Find Japan</b><small>找日本</small></button>
+      <button class="stop locked" data-go="2"><div class="n">2</div><span class="done">✅</span><img src="img/w_cat.png" alt=""><b>Word Treasure</b><small>單字寶箱</small></button>
+      <button class="stop locked" data-go="3"><div class="n">3</div><span class="done">✅</span><img src="img/w_flag.png" alt=""><b>Match It</b><small>連連看</small></button>
+      <button class="stop locked" data-go="4"><div class="n">4</div><span class="done">✅</span><img src="img/w_cherry.png" alt=""><b>Memory</b><small>翻翻樂</small></button>
+      <button class="stop locked" data-go="5"><div class="n">5</div><span class="done">✅</span><img src="img/doors_icon.png" alt=""><b>Knock, Knock!</b><small>敲敲門找 Maru</small></button>
+      <button class="stop locked" data-go="6"><div class="n">6</div><span class="done">✅</span><img src="img/w_sun.png" alt=""><b>Season Chant</b><small>四季大挑戰</small></button>
     </div>
     <button class="hbtn" id="soundTest">🔊 先測試聲音 Sound check</button>
+  </section>
+
+  <!-- FIND JAPAN -->
+  <section class="screen" id="s-ja">
+    <p class="big" id="jaTitle">Where is Taiwan?</p>
+    <div class="mapbox" id="mapBox"><div id="mapSvg"></div>
+      <img id="plane" src="img/plane.png" alt="">
+      <button class="zone" id="zTW" style="left:33%;top:65%;width:18%;height:26%"></button>
+      <button class="zone" id="zJP" style="left:55%;top:1%;width:40%;height:60%"></button>
+    </div>
+    <p class="sub" id="jaSub">Tap the map! 在地圖上點一點</p>
+  </section>
+  <section class="screen" id="s-jb">
+    <p class="big">Konnichiwa! 跟 Maru 打招呼</p>
+    <div class="hello"><img src="img/maru_wave.png" alt=""><button class="miss" id="helloTap"></button></div>
+    <div class="hearts" id="hearts"></div>
+    <p class="sub">Tap Maru and say "Konnichiwa!" 點 Maru，一起說 Konnichiwa</p>
+  </section>
+  <!-- MATCH -->
+  <section class="screen" id="s-m">
+    <div class="progress" id="mprog"></div>
+    <p class="sub">Tap a picture, then tap the word! 先點圖，再點英文字</p>
+    <div class="match" id="matchBox"><svg id="lines"></svg><div class="col" id="mL"></div><div class="col" id="mR"></div></div>
+  </section>
+  <!-- MEMORY -->
+  <section class="screen" id="s-mem">
+    <p class="sub">Find the pairs! 翻兩張，找出一樣的（圖＋字）</p>
+    <div class="mem" id="memGrid"></div>
   </section>
 
   <!-- STAGE 1: learn -->
   <section class="screen" id="s-1a">
     <p class="big">Tap and listen! 點一點，聽一聽</p>
-    <div class="grid g4" id="learnGrid"></div>
+    <div class="grid g7" id="learnGrid"></div>
     <button class="cta hide" id="learnGo">Let's play! ▶</button>
   </section>
   <!-- STAGE 1: quiz -->
@@ -195,13 +257,14 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const A=n=>`audio/${n}.mp3`;
 const WORDS=[
  {k:'cat',t:'cat',img:'w_cat'},{k:'flag',t:'flag',img:'w_flag'},{k:'sun',t:'sun',img:'w_sun'},{k:'islands',t:'islands',img:'w_islands'},
- {k:'cherry_blossoms',t:'cherry blossoms',img:'w_cherry'},{k:'fireworks',t:'fireworks',img:'w_fireworks'},{k:'leaves',t:'leaves',img:'w_leaves'},{k:'snow',t:'snow',img:'w_snow'}];
+ {k:'cherry_blossoms',t:'cherry blossoms',img:'w_cherry'},{k:'fireworks',t:'fireworks',img:'w_fireworks'},{k:'leaves',t:'leaves',img:'w_leaves'},{k:'snow',t:'snow',img:'w_snow'},
+ {k:'globe',t:'globe',img:'w_globe'},{k:'japan',t:'Japan',img:'w_japan'},{k:'taiwan',t:'Taiwan',img:'w_taiwan'},{k:'door',t:'door',img:'w_door'},{k:'ski',t:'ski',img:'w_ski'},{k:'red_circle',t:'red circle',img:'w_circle'}];
 const SEASONS=[
  {k:'spring',t:'spring',img:'s_spring',clue:'Wow! Pink!',clueA:'L26',ans:['L27','L28'],chant:'L45'},
  {k:'summer',t:'summer',img:'s_summer',clue:'Boom!',clueA:'L31',ans:['L32','L33'],chant:'L46'},
  {k:'autumn',t:'autumn',img:'s_autumn',clue:'Red! Yellow!',clueA:'L36',ans:['L37','L38'],chant:'L47'},
  {k:'winter',t:'winter',img:'s_winter',clue:"It's cold!",clueA:'L41',ans:['L42'],chant:'L48'}];
-let stars=0, cleared=JSON.parse(localStorage.getItem('maru3')||'[]');
+let stars=0, cleared=JSON.parse(localStorage.getItem('maru6')||'[]');
 /* audio engine: everything decoded once up front, so taps play instantly */
 const AC=new (window.AudioContext||window.webkitAudioContext)();
 const BUF={}; let curSrc=null, playToken=0;
@@ -235,12 +298,12 @@ function confetti(){const c=$('#fx'),x=c.getContext('2d');c.width=innerWidth;c.h
 
 /* MAP */
 function refreshMap(){$$('.stop').forEach(s=>{const n=+s.dataset.go;s.classList.toggle('cleared',cleared.includes(n));s.classList.toggle('locked',n>1&&!cleared.includes(n-1))})}
-$$('.stop').forEach(s=>s.onclick=()=>{const n=+s.dataset.go;if(s.classList.contains('locked')){toast('先完成上一關！');return}({1:start1,2:start2,3:start3})[n]()});
+$$('.stop').forEach(s=>s.onclick=()=>{const n=+s.dataset.go;if(s.classList.contains('locked')){toast('先完成上一關！');return}({1:startJ,2:start1,3:startM,4:startMem,5:start2,6:start3})[n]()});
 // teacher unlock: long-press title
-let lp;$('header h1').addEventListener('pointerdown',()=>lp=setTimeout(()=>{cleared=[1,2,3];refreshMap();toast('老師模式：全部解鎖')},1500));
+let lp;$('header h1').addEventListener('pointerdown',()=>lp=setTimeout(()=>{cleared=[1,2,3,4,5,6];refreshMap();toast('老師模式：全部解鎖')},1500));
 ['pointerup','pointerleave'].forEach(e=>$('header h1').addEventListener(e,()=>clearTimeout(lp)));
 $('#homeBtn').onclick=()=>{stopAudio();show('s-map');refreshMap()};
-function clear(n){if(!cleared.includes(n))cleared.push(n);try{localStorage.setItem('maru3',JSON.stringify(cleared))}catch(e){}}
+function clear(n){if(!cleared.includes(n))cleared.push(n);try{localStorage.setItem('maru6',JSON.stringify(cleared))}catch(e){}}
 function finish(n,title){clear(n);confetti();$('#doneTitle').textContent=title;show('s-done')}
 $('#doneBtn').onclick=()=>{show('s-map');refreshMap()};
 
@@ -248,12 +311,12 @@ $('#doneBtn').onclick=()=>{show('s-map');refreshMap()};
 function start1(){const g=$('#learnGrid');g.innerHTML='';const heard=new Set();$('#learnGo').classList.add('hide');
   WORDS.forEach(w=>{const b=card(w.img,w.t);b.onclick=()=>{play('W_'+w.k);b.classList.add('heard');heard.add(w.k);if(heard.size===WORDS.length)$('#learnGo').classList.remove('hide')};g.append(b)});
   show('s-1a')}
-$('#learnGo').onclick=()=>{q1=shuffle(WORDS);qi=0;show('s-1b');ask1()};
+$('#learnGo').onclick=()=>{q1=shuffle(WORDS).slice(0,8);qi=0;show('s-1b');ask1()};
 let q1=[],qi=0,miss=0;
 function ask1(){const w=q1[qi];prog($('#q1prog'),q1.length,qi);const opts=shuffle([w,...shuffle(WORDS.filter(x=>x!==w)).slice(0,2)]);
   const g=$('#q1grid');g.innerHTML='';let locked=false;
   opts.forEach(o=>{const b=card(o.img,'');b.onclick=async()=>{if(locked)return;
-    if(o===w){locked=true;b.classList.add('ok');sfx('ok');addStar();toast('Great! 👍');await play('W_'+w.k);qi++;qi<q1.length?setTimeout(ask1,400):finish(1,'Word Treasure ✔')}
+    if(o===w){locked=true;b.classList.add('ok');sfx('ok');addStar();toast('Great! 👍');await play('W_'+w.k);qi++;qi<q1.length?setTimeout(ask1,400):finish(2,'Word Treasure ✔')}
     else{b.classList.add('no','dim');sfx('no');setTimeout(()=>b.classList.remove('no'),500)}};g.append(b)});
   $('#q1spk').onclick=()=>play('W_'+w.k);setTimeout(()=>play('W_'+w.k),350)}
 
@@ -274,7 +337,7 @@ function startHide(){const box=$('#snowBox');box.style.backgroundImage='url(img/
   [10,37,64].forEach((l,i)=>{const m=document.createElement('button');m.className='mound';m.style.left=l+'%';
     m.innerHTML=`<img class="cat" src="img/maru_peek.png" alt="">${i===spot?'<div class="tail"></div>':''}<img class="pile" src="img/snowpile.png" alt="">`;
     m.onclick=async()=>{if(m.classList.contains('found'))return;
-      if(i===spot){m.classList.add('found');sfx('ok');addStar(3);await play('L43','L44');finish(2,'You found Maru! 🐱')}
+      if(i===spot){m.classList.add('found');sfx('ok');addStar(3);await play('L43','L44');finish(5,'You found Maru! 🐱')}
       else{m.classList.add('puff');sfx('no');toast('Not here!');setTimeout(()=>m.classList.remove('puff'),500)}};box.append(m)});
   show('s-2c')}
 
@@ -292,9 +355,58 @@ function startOrder(){const g=$('#orderGrid');g.innerHTML='';let step=0;
     else{b.classList.add('no');sfx('no');setTimeout(()=>b.classList.remove('no'),500)}};g.append(b)});
   show('s-3b')}
 function startFlag(){show('s-3c');play('L19')}
-$('#hotDot').onclick=async()=>{sfx('ok');addStar(2);await play('L20','L53','L54');finish(3,'Come and play in Japan! 🇯🇵')};
+$('#hotDot').onclick=async()=>{sfx('ok');addStar(2);await play('L20','L53','L54');finish(6,'Come and play in Japan! 🇯🇵')};
 $('#flagCat .miss').onclick=()=>{sfx('no');toast('Find the red circle!')};
 
+
+/* FIND JAPAN */
+let jaStep=0, mapReady=fetch('img/asia_map.svg').then(r=>r.text()).then(t=>{$('#mapSvg').innerHTML=t});
+async function startJ(){await mapReady;jaStep=0;['map-tw','map-jp'].forEach(id=>{const p=document.getElementById(id);if(p)p.setAttribute('fill','#f6e7c4')});
+  $('#plane').style.display='none';$('#jaTitle').textContent='Where is Taiwan? 台灣在哪裡？';$('#zTW').classList.remove('hint');$('#zJP').classList.remove('hint');
+  show('s-ja');play('W_taiwan')}
+$('#zTW').onclick=async()=>{if(jaStep!==0){if(jaStep===1){sfx('no');toast('That is Taiwan!')}return}
+  jaStep=-1;$('#zTW').classList.remove('hint');document.getElementById('map-tw').setAttribute('fill','#8fdc9b');sfx('ok');addStar();
+  await play('L03');jaStep=1;$('#jaTitle').textContent='Where is Japan? 日本在哪裡？';play('L04')};
+$('#zJP').onclick=async()=>{if(jaStep!==1){if(jaStep===0){sfx('no');toast('Find Taiwan first!')}return}
+  jaStep=-1;$('#zJP').classList.remove('hint');document.getElementById('map-jp').setAttribute('fill','#ff9fbf');sfx('ok');addStar();
+  await play('L05','L06','L07','L08');$('#jaTitle').textContent="Let's go to Japan! ✈️";
+  const pl=$('#plane');pl.style.transition='none';pl.style.left='34%';pl.style.top='72%';pl.style.display='block';void pl.offsetWidth;pl.style.transition='';
+  play('L09','L10');requestAnimationFrame(()=>{pl.style.left='66%';pl.style.top='30%'});
+  setTimeout(async()=>{await play('L11','L12');startHello()},2600)};
+$('#mapBox').addEventListener('click',e=>{if(e.target.classList.contains('zone'))return;if(jaStep>=0){sfx('no');toast(jaStep===0?'Find Taiwan!':'Find Japan!');(jaStep===0?$('#zTW'):$('#zJP')).classList.add('hint')}});
+let hi=0;
+function startHello(){hi=0;$('#hearts').textContent='';show('s-jb');play('L13')}
+$('#helloTap').onclick=async()=>{if(hi>=3)return;hi++;$('#hearts').textContent='💗'.repeat(hi);sfx('ok');addStar();
+  await play(['L13','L14','L15'][hi-1]);if(hi===3){await play('L16','L17');finish(1,'Konnichiwa, Maru! 👋')}};
+
+/* MATCH 連連看 */
+let mRound=0,mSets=[],mSel=null;
+function startM(){const pick=shuffle(WORDS).slice(0,8);mSets=[pick.slice(0,4),pick.slice(4,8)];mRound=0;show('s-m');buildM()}
+function buildM(){const set=mSets[mRound];prog($('#mprog'),2,mRound);mSel=null;$('#lines').innerHTML='';
+  const L=$('#mL'),Rr=$('#mR');L.innerHTML='';Rr.innerHTML='';let done=0;
+  set.forEach(w=>{const b=document.createElement('button');b.className='pic';b.innerHTML=`<img src="img/${w.img}.png" alt="">`;b.dataset.k=w.k;
+    b.onclick=()=>{$$('#mL .pic').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');mSel=b;play('W_'+w.k)};L.append(b)});
+  shuffle(set).forEach(w=>{const b=document.createElement('button');b.className='word';b.textContent=w.t;b.dataset.k=w.k;
+    b.onclick=async()=>{if(!mSel){play('W_'+w.k);toast('先點一張圖！');return}
+      if(mSel.dataset.k===w.k){const p=mSel;mSel=null;p.classList.remove('sel');p.classList.add('done');b.classList.add('done');sfx('ok');addStar();line(p,b);done++;
+        await play('W_'+w.k);if(done===4){mRound++;mRound<2?setTimeout(buildM,500):finish(3,'Match It ✔')}}
+      else{b.classList.add('no');sfx('no');setTimeout(()=>b.classList.remove('no'),450)}};Rr.append(b)})}
+function line(a,b){const box=$('#matchBox').getBoundingClientRect(),A=a.getBoundingClientRect(),B=b.getBoundingClientRect();
+  const x1=A.right-box.left,y1=A.top+A.height/2-box.top,x2=B.left-box.left,y2=B.top+B.height/2-box.top;
+  $('#lines').insertAdjacentHTML('beforeend',`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#3bb36b" stroke-width="8" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="9" fill="#3bb36b"/><circle cx="${x2}" cy="${y2}" r="9" fill="#3bb36b"/>`)}
+
+/* MEMORY 翻翻樂 */
+let memOpen=[],memGot=0,memBusy=false;
+function startMem(){const pick=shuffle(WORDS).slice(0,6);const cards=shuffle(pick.flatMap(w=>[{w,face:'pic'},{w,face:'word'}]));
+  const g=$('#memGrid');g.innerHTML='';memOpen=[];memGot=0;memBusy=false;
+  cards.forEach(c=>{const b=document.createElement('button');b.className='mc';b.dataset.k=c.w.k;
+    b.innerHTML=`<div class="in"><div class="ba"></div><div class="fa">${c.face==='pic'?`<img src="img/${c.w.img}.png" alt="">`:c.w.t}</div></div>`;
+    b.onclick=()=>{if(memBusy||b.classList.contains('flip'))return;b.classList.add('flip');play('W_'+c.w.k);memOpen.push(b);
+      if(memOpen.length===2){memBusy=true;const [x,y]=memOpen;
+        if(x.dataset.k===y.dataset.k){setTimeout(()=>{x.classList.add('got');y.classList.add('got');sfx('ok');addStar();memOpen=[];memBusy=false;memGot++;if(memGot===6)setTimeout(()=>finish(4,'Memory ✔'),700)},350)}
+        else{setTimeout(()=>{sfx('no');x.classList.remove('flip');y.classList.remove('flip');memOpen=[];memBusy=false},1100)}}};
+    g.append(b)});
+  show('s-mem')}
 
 /* buddy + video */
 const PRAISE=['Great!','Yes!','Good job!','Super!','Wow!'], TRY=['Try again!','Oops!','Hmm…'];
@@ -307,7 +419,7 @@ const _show=show; show=id=>{_show(id);$('#buddy').classList.toggle('on',!['s-map
 $('#watchBtn').onclick=()=>{stopAudio();$('#vslot').innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/qED_TBDbxOk?autoplay=1&rel=0&playsinline=1" allow="autoplay; fullscreen" allowfullscreen></iframe>';$('#vbox').classList.add('on')};
 $('#vclose').onclick=()=>{$('#vslot').innerHTML='';$('#vbox').classList.remove('on')};
 $('#soundTest').onclick=()=>{toast('🔊 Konnichiwa!');play('L13')};
-['w_cat','w_flag','w_sun','w_islands','w_cherry','w_fireworks','w_leaves','w_snow','maru_sit','maru_peek','maru_jump','snowpile'].forEach(n=>{const i=new Image();i.src='img/'+n+'.png'});
+['w_cat','w_flag','w_sun','w_islands','w_cherry','w_fireworks','w_leaves','w_snow','w_globe','w_japan','w_taiwan','w_door','w_ski','w_circle','maru_sit','maru_peek','maru_jump','maru_wave','plane','snowpile'].forEach(n=>{const i=new Image();i.src='img/'+n+'.png'});
 ['s_spring','s_summer','s_autumn','s_winter','doors'].forEach(n=>{const i=new Image();i.src='img/'+n+'.jpg'});
 refreshMap();
 </script>
