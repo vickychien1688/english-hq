@@ -110,6 +110,14 @@
   .res-title { font-size:15.5px; font-weight:700; line-height:1.45; color:var(--ink); }
   .res-meta { font-size:12.5px; color:var(--muted); }
   .res-actions { display:flex; gap:8px; margin-top:auto; padding-top:12px; }
+  /* 遊戲卡片：整張封面圖就是按鈕，電子白板上一點就開遊戲 */
+  .game-cover { display:block; margin:-22px -22px 4px; aspect-ratio:16/9; background:#f3ecd9;
+    position:relative; overflow:hidden; text-decoration:none; }
+  .game-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+  .game-cover .game-ph { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:64px; }
+  .game-cover .game-play { position:absolute; right:12px; bottom:12px; background:rgba(0,0,0,.62); color:#fff;
+    font-weight:800; font-size:14px; padding:7px 14px; border-radius:99px; }
+  a.btn { text-decoration:none; display:inline-flex; align-items:center; }
   .empty { color:var(--muted); text-align:center; padding:80px 0; font-size:14px; }
   .empty::before { content:"📖"; display:block; font-size:34px; margin-bottom:12px; opacity:.6; }
 
@@ -419,8 +427,9 @@
     <div class="field"><label>名稱</label><input id="upTitle" type="text" placeholder="例：教師手冊 Day 1、學習單 Day 2 Practice"></div>
     <div class="field"><label>說明（選填）</label><input id="upDesc" type="text"></div>
     <div class="field"><label>檔案</label><input id="upFile" type="file"></div>
-    <div class="field"><label>或貼上 YouTube 影片連結（不用選檔案）</label>
-      <input id="upLink" type="url" placeholder="例：https://youtu.be/xxxxxxxxxxx"></div>
+    <div class="field"><label>或貼上連結：YouTube 影片／線上遊戲網址</label>
+      <input id="upLink" type="url" placeholder="例：https://youtu.be/xxxxxxxxxxx 或 https://wordwall.net/…">
+      <p style="font-size:12px;color:var(--muted);margin-top:5px;">影片連結不用選檔案。遊戲連結請在上面「檔案」選一張封面圖，老師點圖就能直接開遊戲。</p></div>
     <div id="upMsg" class="msg"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeUpload()">取消</button>
@@ -493,6 +502,18 @@ function isLink(r){ return /^https?:\/\//i.test(r.file_path || ""); }
 function ytId(url){
   const m = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/);
   return m ? m[1] : null;
+}
+/* 遊戲卡片：file_path 是遊戲網址（不是 YouTube），file_name 存「cover:封面圖在 Storage 的路徑」 */
+function isGame(r){ return isLink(r) && !ytId(r.file_path); }
+function coverPath(r){ return /^cover:/.test(r.file_name || "") ? r.file_name.slice(6) : ""; }
+let _coverTimer = null;
+function queueCovers(){ clearTimeout(_coverTimer); _coverTimer = setTimeout(loadCovers, 0); }
+async function loadCovers(){
+  for (const img of document.querySelectorAll("img[data-cover]")){
+    const path = img.dataset.cover; img.removeAttribute("data-cover");
+    const { data } = await db.storage.from("resources").createSignedUrl(path, 21600);
+    if (data && data.signedUrl){ img.src = data.signedUrl; img.onload = () => { img.style.opacity = 1; }; }
+  }
 }
 async function log(action, resource_id=null, detail={}){
   try {
@@ -629,6 +650,25 @@ function crumb(){
 }
 const TYPE_ICO = { pdf:"📄", image:"🖼️", video:"🎬", audio:"🎧", ppt:"📊", doc:"📝", other:"📁" };
 function resCard(r, canDL, label){
+  if (isGame(r)){
+    const cp = coverPath(r); if (cp) queueCovers();
+    const open = `href="${esc(r.file_path)}" target="_blank" rel="noopener" onclick='log("view", ${JSON.stringify(r.id)}, {title:${JSON.stringify(r.title)}})'`;
+    return `
+    <div class="res-card">
+      <a class="game-cover" ${open} aria-label="${esc(label)}">
+        <span class="game-ph">🎮</span>
+        ${cp ? `<img data-cover="${esc(cp)}" alt="" style="position:relative;opacity:0;transition:opacity .2s;">` : ""}
+        <span class="game-play">▶ 點圖開始玩</span>
+      </a>
+      <span class="res-type">🎮 遊戲</span>
+      <span class="res-title">${esc(label)}</span>
+      <span class="res-meta">${esc(r.description||"")}</span>
+      <div class="res-actions">
+        <a class="btn btn-primary btn-sm" ${open}>▶ 開始玩</a>
+        ${canManage() ? `<button class="btn btn-danger btn-sm" onclick='doDelete(${JSON.stringify(r.id)})'>刪除</button>` : ""}
+      </div>
+    </div>`;
+  }
   if (isLink(r)) return `
     <div class="res-card">
       <span class="res-type">🎬 影片連結</span>
@@ -1066,7 +1106,7 @@ async function startTeaching(id){
 async function doDownload(id){
   if (!userCanDL()) return alert("您的帳號沒有下載權限，請聯繫總部。");
   const r = window._resCache[id] || currentResource; if (!r) return;
-  if (isLink(r)) return alert("這是影片連結，沒有檔案可以下載。");
+  if (isLink(r)) return alert("這是連結，沒有檔案可以下載。");
   const { data, error } = await db.storage.from("resources")
     .createSignedUrl(r.file_path, 300, { download: r.file_name });
   if (error) return alert("下載失敗：" + error.message);
@@ -1117,8 +1157,10 @@ async function doUpload(){
   const file = $("upFile").files[0];
   const name = $("upTitle").value.trim();
   const link = $("upLink").value.trim();
-  if (link && file) return showMsg($("upMsg"), "檔案和影片連結請擇一");
-  if (link && !ytId(link)) return showMsg($("upMsg"), "這不像 YouTube 影片連結，請再確認");
+  const game = !!link && !ytId(link);
+  if (link && !/^https:\/\/[^\s]+\.[^\s]+$/i.test(link)) return showMsg($("upMsg"), "連結要是 https:// 開頭的完整網址，請再確認");
+  if (link && !game && file) return showMsg($("upMsg"), "檔案和影片連結請擇一");
+  if (game && file && extType(file.name) !== "image") return showMsg($("upMsg"), "遊戲的封面請選圖片檔（JPG／PNG）");
   if ((!file && !link) || !name) return showMsg($("upMsg"), "請填寫名稱，並選擇檔案或貼上影片連結");
   let week = $("upWeek").value;
   if (week === "__new"){
@@ -1135,7 +1177,15 @@ async function doUpload(){
   try {
     const level = $("upLevel").value, category = $("upCategory").value;
     let path, fileName, fileType, fileSize;
-    if (link){
+    if (game){
+      path = link; fileName = "遊戲連結"; fileType = "other"; fileSize = 0;
+      if (file){
+        const cover = `${level}/${category}/${Date.now()}_cover_${file.name.replace(/[^\w.\-]+/g, "_")}`;
+        const { error: cErr } = await db.storage.from("resources").upload(cover, file);
+        if (cErr) throw cErr;
+        fileName = "cover:" + cover;
+      }
+    } else if (link){
       path = "https://youtu.be/" + ytId(link); fileName = "YouTube"; fileType = "video"; fileSize = 0;
     } else {
       const safeName = file.name.replace(/[^\w.\-]+/g, "_");
@@ -1151,7 +1201,7 @@ async function doUpload(){
     }).select().single();
     if (insErr) throw insErr;
     await log("upload", row.id, { title, file: fileName });
-    showMsg($("upMsg"), link ? "已加入影片連結！" : "上傳成功！", true);
+    showMsg($("upMsg"), game ? "已加入遊戲！" : link ? "已加入影片連結！" : "上傳成功！", true);
     $("upTitle").value = ""; $("upDesc").value = ""; $("upFile").value = ""; $("upLink").value = "";
     curLevel = level; curCat = category;
     renderTabs(); loadResources();
@@ -1166,6 +1216,7 @@ async function doDelete(id){
   const { error } = await db.from("resources").delete().eq("id", id);
   if (error) return alert("刪除失敗：" + error.message);
   if (!isLink(r)) await db.storage.from("resources").remove([r.file_path]);
+  else if (coverPath(r)) await db.storage.from("resources").remove([coverPath(r)]);
   await log("delete", id, { title:r.title });
   loadResources();
 }
