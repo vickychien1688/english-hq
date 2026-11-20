@@ -7,7 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#3a2a1a;--cream:#fff8ec;--pink:#ff7aa8;--red:#e8382f;--blue:#3d7bd9;--green:#3bb36b;--gold:#ffc83d}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation;-webkit-touch-callout:none}
+img{pointer-events:none;-webkit-user-drag:none}
+button{transition:transform .08s ease-out}
+button:active{transform:scale(.94)}
 html,body{margin:0;height:100%;background:var(--cream);color:var(--ink);font-family:"Baloo 2","PingFang TC","Noto Sans TC",sans-serif;overflow:hidden}
 #app{position:fixed;inset:0;display:flex;flex-direction:column}
 header{display:flex;align-items:center;gap:12px;padding:10px 18px;background:#fff;border-bottom:4px solid #f3e2c4}
@@ -15,7 +18,7 @@ header h1{font-size:clamp(20px,2.6vw,32px);margin:0;flex:1;font-weight:800}
 .stars{font-size:clamp(20px,2.4vw,30px);font-weight:800;background:#fff4cf;border-radius:99px;padding:2px 16px}
 .hbtn{border:0;background:#f3e2c4;color:var(--ink);font:inherit;font-weight:800;font-size:clamp(16px,1.8vw,22px);border-radius:99px;padding:6px 18px;cursor:pointer}
 main{flex:1;position:relative;overflow:hidden}
-.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:safe center;overflow-y:auto;padding:10px 16px;gap:min(14px,1.6vh)}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:safe center;overflow-y:auto;overscroll-behavior:none;padding:10px 16px;gap:min(14px,1.6vh)}
 .screen.on{display:flex}
 .big{font-size:clamp(24px,min(4vw,6vh),52px);font-weight:800;text-align:center;line-height:1.15;margin:0}
 .sub{font-size:clamp(16px,2vw,24px);text-align:center;margin:0;opacity:.8}
@@ -28,7 +31,7 @@ main{flex:1;position:relative;overflow:hidden}
 .map{display:flex;gap:clamp(12px,3vw,48px);align-items:flex-end;justify-content:center;flex-wrap:wrap}
 .stop{border:0;background:#fff;border-radius:28px;width:clamp(180px,24vw,300px);padding:16px 12px 18px;box-shadow:0 8px 0 #ead6b3;cursor:pointer;font:inherit;color:var(--ink);position:relative;transition:transform .15s}
 .stop:active{transform:translateY(4px)}
-.stop img{width:70%;aspect-ratio:1;object-fit:contain}
+.stop img{width:min(70%,24vh);aspect-ratio:1;object-fit:contain}
 .stop .n{position:absolute;top:-16px;left:-10px;background:var(--gold);width:52px;height:52px;border-radius:50%;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #d9a520}
 .stop b{display:block;font-size:clamp(20px,2.4vw,30px)}
 .stop small{display:block;font-size:clamp(14px,1.6vw,20px);opacity:.75}
@@ -36,7 +39,7 @@ main{flex:1;position:relative;overflow:hidden}
 .stop.locked::after{content:"🔒";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px}
 .stop .done{position:absolute;top:-14px;right:-8px;font-size:42px;display:none}
 .stop.cleared .done{display:block}
-.hero{height:clamp(110px,22vh,220px)}
+.hero{height:clamp(80px,15vh,180px)}
 /* grids */
 .grid{display:grid;gap:clamp(10px,1.6vw,22px);width:min(96vw,1100px)}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr));width:min(96vw,112vh,1000px)}
@@ -80,6 +83,20 @@ main{flex:1;position:relative;overflow:hidden}
 .flagcat img{width:100%}
 .flagcat .hot{position:absolute;border:0;background:transparent;border-radius:50%;cursor:pointer}
 .miss{position:absolute;inset:0;border:0;background:transparent;cursor:pointer}
+
+/* buddy Maru */
+#buddy{position:fixed;left:14px;bottom:10px;width:clamp(80px,11vw,150px);z-index:40;pointer-events:none;transition:transform .2s;display:none}
+#buddy.on{display:block}
+#buddy.yay{animation:yay .7s}
+#buddy.oops{animation:shake .45s}
+@keyframes yay{30%{transform:translateY(-40px) rotate(-8deg)}60%{transform:translateY(0)}80%{transform:translateY(-12px)}}
+#bubble{position:fixed;left:clamp(90px,12vw,165px);bottom:clamp(70px,9vw,120px);background:#fff;border-radius:20px;padding:6px 16px;font-weight:800;font-size:clamp(18px,2.2vw,28px);box-shadow:0 4px 0 #ead6b3;z-index:41;opacity:0;transition:.2s;pointer-events:none}
+#bubble.on{opacity:1}
+/* video */
+.watch{border:0;background:var(--red);color:#fff;font:inherit;font-weight:800;font-size:clamp(22px,2.8vw,34px);border-radius:99px;padding:8px 34px;box-shadow:0 6px 0 #a8241d;cursor:pointer}
+#vbox{position:fixed;inset:0;background:rgba(30,20,10,.85);z-index:70;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+#vbox.on{display:flex}
+#vbox iframe{width:min(92vw,150vh);aspect-ratio:16/9;border:0;border-radius:18px;background:#000}
 @media (max-width:700px){.g4{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -95,6 +112,7 @@ main{flex:1;position:relative;overflow:hidden}
   <section class="screen on" id="s-map">
     <img class="hero" src="img/maru_jump.png" alt="">
     <p class="big">Help find Maru!</p>
+    <button class="watch" id="watchBtn">▶ 先看影片 Watch the video</button>
     <div class="map">
       <button class="stop" data-go="1"><div class="n">1</div><span class="done">✅</span><img src="img/w_cat.png" alt=""><b>Word Treasure</b><small>單字寶箱</small></button>
       <button class="stop locked" data-go="2"><div class="n">2</div><span class="done">✅</span><img src="img/doors_icon.png" alt=""><b>Knock, Knock!</b><small>敲敲門找 Maru</small></button>
@@ -168,6 +186,9 @@ main{flex:1;position:relative;overflow:hidden}
 </main>
 </div>
 <div class="toast" id="toast"></div>
+<img id="buddy" src="img/maru_sit.png" alt="">
+<div id="bubble"></div>
+<div id="vbox"><div id="vslot"></div><button class="cta" id="vclose">✕ 看完了 Done</button></div>
 <canvas id="fx"></canvas>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -181,18 +202,22 @@ const SEASONS=[
  {k:'autumn',t:'autumn',img:'s_autumn',clue:'Red! Yellow!',clueA:'L36',ans:['L37','L38'],chant:'L47'},
  {k:'winter',t:'winter',img:'s_winter',clue:"It's cold!",clueA:'L41',ans:['L42'],chant:'L48'}];
 let stars=0, cleared=JSON.parse(localStorage.getItem('maru3')||'[]');
-const player=new Audio();
-let chain=Promise.resolve();
-function play(...ids){ // play sequentially, returns promise
-  return new Promise(res=>{
-    let i=0; const next=()=>{ if(i>=ids.length) return res();
-      player.src=ids[i++].startsWith('L')||ids[i-1].startsWith('W')?A(ids[i-1]):ids[i-1];
-      player.onended=()=>setTimeout(next,180); player.onerror=()=>next();
-      player.play().catch(()=>next()); };
-    next(); });
+/* audio engine: everything decoded once up front, so taps play instantly */
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+const BUF={}; let curSrc=null, playToken=0;
+const ALL_IDS=[...Array(55)].map((_,i)=>'L'+String(i+1).padStart(2,'0')).concat(WORDS.map(w=>'W_'+w.k));
+async function loadBuf(id){if(BUF[id])return BUF[id];try{const r=await fetch(A(id));const ab=await r.arrayBuffer();BUF[id]=await new Promise((ok,no)=>AC.decodeAudioData(ab,ok,no))}catch(e){BUF[id]=null}return BUF[id]}
+ALL_IDS.forEach(loadBuf);
+function unlock(){if(AC.state!=='running')AC.resume()}
+['pointerdown','touchstart','keydown'].forEach(e=>addEventListener(e,unlock,{passive:true,capture:true}));
+function stopAudio(){playToken++;if(curSrc){try{curSrc.stop()}catch(e){}curSrc=null}}
+async function play(...ids){stopAudio();const tok=playToken;unlock();
+  for(const id of ids){if(tok!==playToken)return;const b=await loadBuf(id);if(!b||tok!==playToken)continue;
+    await new Promise(res=>{const s=AC.createBufferSource();s.buffer=b;s.connect(AC.destination);s.onended=res;curSrc=s;s.start();});
+    if(tok!==playToken)return; await new Promise(r=>setTimeout(r,150));}
 }
 function sfx(type){ // tiny synth sounds, no files
-  try{const c=sfx.c||(sfx.c=new (window.AudioContext||window.webkitAudioContext)());
+  try{const c=AC;
   const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
   const t=c.currentTime; g.gain.setValueAtTime(.18,t);
   if(type==='ok'){o.type='triangle';o.frequency.setValueAtTime(660,t);o.frequency.setValueAtTime(990,t+.1);g.gain.exponentialRampToValueAtTime(.001,t+.35);o.start(t);o.stop(t+.36)}
@@ -214,7 +239,7 @@ $$('.stop').forEach(s=>s.onclick=()=>{const n=+s.dataset.go;if(s.classList.conta
 // teacher unlock: long-press title
 let lp;$('header h1').addEventListener('pointerdown',()=>lp=setTimeout(()=>{cleared=[1,2,3];refreshMap();toast('老師模式：全部解鎖')},1500));
 ['pointerup','pointerleave'].forEach(e=>$('header h1').addEventListener(e,()=>clearTimeout(lp)));
-$('#homeBtn').onclick=()=>{player.pause();show('s-map');refreshMap()};
+$('#homeBtn').onclick=()=>{stopAudio();show('s-map');refreshMap()};
 function clear(n){if(!cleared.includes(n))cleared.push(n);try{localStorage.setItem('maru3',JSON.stringify(cleared))}catch(e){}}
 function finish(n,title){clear(n);confetti();$('#doneTitle').textContent=title;show('s-done')}
 $('#doneBtn').onclick=()=>{show('s-map');refreshMap()};
@@ -270,7 +295,20 @@ function startFlag(){show('s-3c');play('L19')}
 $('#hotDot').onclick=async()=>{sfx('ok');addStar(2);await play('L20','L53','L54');finish(3,'Come and play in Japan! 🇯🇵')};
 $('#flagCat .miss').onclick=()=>{sfx('no');toast('Find the red circle!')};
 
+
+/* buddy + video */
+const PRAISE=['Great!','Yes!','Good job!','Super!','Wow!'], TRY=['Try again!','Oops!','Hmm…'];
+function buddy(mood){const b=$('#buddy'),u=$('#bubble');b.classList.remove('yay','oops');void b.offsetWidth;
+  if(mood==='ok'){b.src='img/maru_jump.png';b.classList.add('yay');u.textContent=PRAISE[Math.random()*PRAISE.length|0]}
+  else{b.src='img/maru_peek.png';b.classList.add('oops');u.textContent=TRY[Math.random()*TRY.length|0]}
+  u.classList.add('on');clearTimeout(buddy.h);buddy.h=setTimeout(()=>{u.classList.remove('on');b.src='img/maru_sit.png'},1200)}
+const _sfx=sfx; sfx=t=>{_sfx(t);buddy(t)};
+const _show=show; show=id=>{_show(id);$('#buddy').classList.toggle('on',!['s-map','s-done'].includes(id))};
+$('#watchBtn').onclick=()=>{stopAudio();$('#vslot').innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/qED_TBDbxOk?autoplay=1&rel=0&playsinline=1" allow="autoplay; fullscreen" allowfullscreen></iframe>';$('#vbox').classList.add('on')};
+$('#vclose').onclick=()=>{$('#vslot').innerHTML='';$('#vbox').classList.remove('on')};
 $('#soundTest').onclick=()=>{toast('🔊 Konnichiwa!');play('L13')};
+['w_cat','w_flag','w_sun','w_islands','w_cherry','w_fireworks','w_leaves','w_snow','maru_sit','maru_peek','maru_jump','snowpile'].forEach(n=>{const i=new Image();i.src='img/'+n+'.png'});
+['s_spring','s_summer','s_autumn','s_winter','doors'].forEach(n=>{const i=new Image();i.src='img/'+n+'.jpg'});
 refreshMap();
 </script>
 </body>
