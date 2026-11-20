@@ -100,6 +100,7 @@ main{flex:1;position:relative;overflow:hidden}
       <button class="stop locked" data-go="2"><div class="n">2</div><span class="done">✅</span><img src="img/doors_icon.png" alt=""><b>Knock, Knock!</b><small>敲敲門找 Maru</small></button>
       <button class="stop locked" data-go="3"><div class="n">3</div><span class="done">✅</span><img src="img/w_sun.png" alt=""><b>Season Chant</b><small>四季大挑戰</small></button>
     </div>
+    <button class="hbtn" id="soundTest">🔊 先測試聲音 Sound check</button>
   </section>
 
   <!-- STAGE 1: learn -->
@@ -269,6 +270,7 @@ function startFlag(){show('s-3c');play('L19')}
 $('#hotDot').onclick=async()=>{sfx('ok');addStar(2);await play('L20','L53','L54');finish(3,'Come and play in Japan! 🇯🇵')};
 $('#flagCat .miss').onclick=()=>{sfx('no');toast('Find the red circle!')};
 
+$('#soundTest').onclick=()=>{toast('🔊 Konnichiwa!');play('L13')};
 refreshMap();
 </script>
 </body>
