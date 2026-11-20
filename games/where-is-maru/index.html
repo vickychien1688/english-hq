@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Where Is Maru? 三關大冒險</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#3a2a1a;--cream:#fff8ec;--pink:#ff7aa8;--red:#e8382f;--blue:#3d7bd9;--green:#3bb36b;--gold:#ffc83d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;background:var(--cream);color:var(--ink);font-family:"Baloo 2","PingFang TC","Noto Sans TC",sans-serif;overflow:hidden}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding:10px 18px;background:#fff;border-bottom:4px solid #f3e2c4}
+header h1{font-size:clamp(20px,2.6vw,32px);margin:0;flex:1;font-weight:800}
+.stars{font-size:clamp(20px,2.4vw,30px);font-weight:800;background:#fff4cf;border-radius:99px;padding:2px 16px}
+.hbtn{border:0;background:#f3e2c4;color:var(--ink);font:inherit;font-weight:800;font-size:clamp(16px,1.8vw,22px);border-radius:99px;padding:6px 18px;cursor:pointer}
+main{flex:1;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px;gap:min(14px,1.6vh)}
+.screen.on{display:flex}
+.big{font-size:clamp(24px,min(4vw,6vh),52px);font-weight:800;text-align:center;line-height:1.15;margin:0}
+.sub{font-size:clamp(16px,2vw,24px);text-align:center;margin:0;opacity:.8}
+.cta{border:0;background:var(--pink);color:#fff;font:inherit;font-weight:800;font-size:clamp(22px,3vw,36px);border-radius:99px;padding:10px 40px;box-shadow:0 6px 0 #d14c7f;cursor:pointer}
+.cta:active{transform:translateY(4px);box-shadow:0 2px 0 #d14c7f}
+.cta.hide{visibility:hidden}
+.spk{border:0;background:var(--blue);color:#fff;width:clamp(64px,8vw,96px);height:clamp(64px,8vw,96px);border-radius:50%;font-size:clamp(30px,4vw,46px);box-shadow:0 6px 0 #2a59a3;cursor:pointer}
+.spk:active{transform:translateY(4px);box-shadow:0 2px 0 #2a59a3}
+/* map */
+.map{display:flex;gap:clamp(12px,3vw,48px);align-items:flex-end;justify-content:center;flex-wrap:wrap}
+.stop{border:0;background:#fff;border-radius:28px;width:clamp(180px,24vw,300px);padding:16px 12px 18px;box-shadow:0 8px 0 #ead6b3;cursor:pointer;font:inherit;color:var(--ink);position:relative;transition:transform .15s}
+.stop:active{transform:translateY(4px)}
+.stop img{width:70%;aspect-ratio:1;object-fit:contain}
+.stop .n{position:absolute;top:-16px;left:-10px;background:var(--gold);width:52px;height:52px;border-radius:50%;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #d9a520}
+.stop b{display:block;font-size:clamp(20px,2.4vw,30px)}
+.stop small{display:block;font-size:clamp(14px,1.6vw,20px);opacity:.75}
+.stop.locked{filter:grayscale(1);opacity:.55}
+.stop.locked::after{content:"🔒";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px}
+.stop .done{position:absolute;top:-14px;right:-8px;font-size:42px;display:none}
+.stop.cleared .done{display:block}
+.hero{height:clamp(110px,22vh,220px)}
+/* grids */
+.grid{display:grid;gap:clamp(10px,1.6vw,22px);width:min(96vw,1100px)}
+.g4{grid-template-columns:repeat(4,1fr);width:min(96vw,96vh,1000px)}
+#seasonGrid,#q3grid,#orderGrid{width:min(96vw,150vh,1100px)}
+.g3{grid-template-columns:repeat(3,1fr);width:min(90vw,900px)}
+.card{border:0;background:#fff;border-radius:24px;padding:10px;box-shadow:0 6px 0 #ead6b3;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:inherit;color:var(--ink);position:relative}
+.card img{width:100%;aspect-ratio:1;object-fit:contain}
+.card.scene img{object-fit:cover;border-radius:16px}
+.card span{font-size:clamp(15px,1.8vw,24px);font-weight:800;white-space:nowrap;line-height:1.1}
+.card.heard{box-shadow:0 6px 0 #9fd9b4;outline:4px solid var(--green)}
+.card.ok{outline:6px solid var(--green);animation:pop .5s}
+.card.no{animation:shake .45s}
+.card.dim{opacity:.35;pointer-events:none}
+@keyframes pop{40%{transform:scale(1.08)}}
+@keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.progress{display:flex;gap:8px}
+.progress i{width:18px;height:18px;border-radius:50%;background:#ead6b3}
+.progress i.f{background:var(--gold)}
+/* doors */
+.doors{position:relative;width:min(94vw,118vh,1200px)}
+.doors img{width:100%;display:block;border-radius:24px}
+.door{position:absolute;top:20%;height:63%;border:0;background:transparent;cursor:pointer;border-radius:30px}
+.door.open{background:rgba(255,255,255,.75)}
+.door.open::after{content:"✔";font-size:clamp(40px,6vw,90px);color:var(--green);font-weight:800}
+.clue{font-size:clamp(34px,6vw,80px);font-weight:800;color:var(--red);text-align:center;margin:0}
+/* snow hide */
+.snow{position:relative;width:min(94vw,150vh,1100px);aspect-ratio:16/9;border-radius:24px;overflow:hidden;background:#dff1ff center/cover}
+.mound{position:absolute;bottom:6%;width:26%;height:42%;border:0;cursor:pointer;background:transparent}
+.mound .pile{position:absolute;left:-6%;right:-6%;bottom:0;width:112%;z-index:2;filter:drop-shadow(0 4px 0 rgba(0,0,0,.15))}
+.mound .cat{position:absolute;left:18%;width:64%;bottom:40%;z-index:1;transition:bottom .5s;display:none}
+.mound.found .cat{display:block;bottom:50%}
+.mound .tail{position:absolute;right:28%;bottom:55%;width:24%;aspect-ratio:1;border-radius:50%;background:var(--red);border:4px solid #3a2a1a;z-index:1;animation:wig 1.6s infinite}
+@keyframes wig{50%{transform:translateY(-8px)}}
+.mound.puff .pile{animation:shake .45s}
+/* finale */
+.badge{font-size:clamp(60px,10vw,130px)}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
+.toast{position:fixed;left:50%;top:18%;transform:translateX(-50%) scale(.6);background:#fff;border-radius:99px;padding:10px 34px;font-size:clamp(28px,4vw,56px);font-weight:800;box-shadow:0 8px 0 #ead6b3;opacity:0;transition:.25s;z-index:60;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) scale(1)}
+.flagcat{position:relative;width:min(60vw,44vh,420px)}
+.flagcat img{width:100%}
+.flagcat .hot{position:absolute;border:0;background:transparent;border-radius:50%;cursor:pointer}
+.miss{position:absolute;inset:0;border:0;background:transparent;cursor:pointer}
+@media (max-width:700px){.g4{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <button class="hbtn" id="homeBtn">🏠 Map</button>
+  <h1>Where Is Maru? 三關大冒險</h1>
+  <div class="stars">⭐ <span id="starN">0</span></div>
+</header>
+<main>
+  <!-- MAP -->
+  <section class="screen on" id="s-map">
+    <img class="hero" src="img/maru_jump.png" alt="">
+    <p class="big">Help find Maru!</p>
+    <div class="map">
+      <button class="stop" data-go="1"><div class="n">1</div><span class="done">✅</span><img src="img/w_cat.png" alt=""><b>Word Treasure</b><small>單字寶箱</small></button>
+      <button class="stop locked" data-go="2"><div class="n">2</div><span class="done">✅</span><img src="img/doors_icon.png" alt=""><b>Knock, Knock!</b><small>敲敲門找 Maru</small></button>
+      <button class="stop locked" data-go="3"><div class="n">3</div><span class="done">✅</span><img src="img/w_sun.png" alt=""><b>Season Chant</b><small>四季大挑戰</small></button>
+    </div>
+  </section>
+
+  <!-- STAGE 1: learn -->
+  <section class="screen" id="s-1a">
+    <p class="big">Tap and listen! 點一點，聽一聽</p>
+    <div class="grid g4" id="learnGrid"></div>
+    <button class="cta hide" id="learnGo">Let's play! ▶</button>
+  </section>
+  <!-- STAGE 1: quiz -->
+  <section class="screen" id="s-1b">
+    <div class="progress" id="q1prog"></div>
+    <button class="spk" id="q1spk">🔊</button>
+    <p class="sub">Listen and tap! 聽到哪一個？</p>
+    <div class="grid g3" id="q1grid"></div>
+  </section>
+
+  <!-- STAGE 2: doors -->
+  <section class="screen" id="s-2a">
+    <p class="big" id="doorTitle">Four seasons. Four doors!</p>
+    <div class="doors"><img src="img/doors.jpg" alt="">
+      <button class="door" data-d="0" style="left:2%;width:23.5%"></button>
+      <button class="door" data-d="1" style="left:26.4%;width:23.2%"></button>
+      <button class="door" data-d="2" style="left:50.3%;width:23.3%"></button>
+      <button class="door" data-d="3" style="left:74.5%;width:23.6%"></button>
+    </div>
+    <p class="sub">Tap a door! 點一扇門</p>
+  </section>
+  <section class="screen" id="s-2b">
+    <p class="clue" id="clueText"></p>
+    <button class="spk" id="clueSpk">🔊</button>
+    <p class="sub">Which season? 門後面是哪個季節？</p>
+    <div class="grid g4" id="seasonGrid"></div>
+  </section>
+  <section class="screen" id="s-2c">
+    <p class="big">Where is Maru? 找到 Maru！</p>
+    <div class="snow" id="snowBox"></div>
+    <p class="sub">Look for the red circle! 找紅色圓圈</p>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section class="screen" id="s-3a">
+    <div class="progress" id="q3prog"></div>
+    <button class="spk" id="q3spk">🔊</button>
+    <p class="sub" id="q3sub">Listen to the chant! 聽念謠，選季節</p>
+    <div class="grid g4" id="q3grid"></div>
+  </section>
+  <section class="screen" id="s-3b">
+    <p class="big">Spring → Summer → Autumn → Winter</p>
+    <p class="sub">Tap in order! 照順序點：春 → 夏 → 秋 → 冬</p>
+    <div class="grid g4" id="orderGrid"></div>
+  </section>
+  <section class="screen" id="s-3c">
+    <p class="big">This is Japan's flag!</p>
+    <p class="sub">Tap the red circle! 點 Maru 身上的紅色圓圈</p>
+    <div class="flagcat" id="flagCat"><img src="img/maru_sit.png" alt=""><button class="miss"></button><button class="hot" id="hotDot" style="left:58%;top:50%;width:39%;height:33%"></button></div>
+  </section>
+
+  <!-- DONE -->
+  <section class="screen" id="s-done">
+    <img class="hero" src="img/maru_jump.png" alt="">
+    <p class="big" id="doneTitle">Great job!</p>
+    <div class="badge" id="doneBadge">⭐⭐⭐</div>
+    <button class="cta" id="doneBtn">Map 回地圖</button>
+  </section>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<canvas id="fx"></canvas>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const A=n=>`audio/${n}.mp3`;
+const WORDS=[
+ {k:'cat',t:'cat',img:'w_cat'},{k:'flag',t:'flag',img:'w_flag'},{k:'sun',t:'sun',img:'w_sun'},{k:'islands',t:'islands',img:'w_islands'},
+ {k:'cherry_blossoms',t:'cherry blossoms',img:'w_cherry'},{k:'fireworks',t:'fireworks',img:'w_fireworks'},{k:'leaves',t:'leaves',img:'w_leaves'},{k:'snow',t:'snow',img:'w_snow'}];
+const SEASONS=[
+ {k:'spring',t:'spring',img:'s_spring',clue:'Wow! Pink!',clueA:'L26',ans:['L27','L28'],chant:'L45'},
+ {k:'summer',t:'summer',img:'s_summer',clue:'Boom!',clueA:'L31',ans:['L32','L33'],chant:'L46'},
+ {k:'autumn',t:'autumn',img:'s_autumn',clue:'Red! Yellow!',clueA:'L36',ans:['L37','L38'],chant:'L47'},
+ {k:'winter',t:'winter',img:'s_winter',clue:"It's cold!",clueA:'L41',ans:['L42'],chant:'L48'}];
+let stars=0, cleared=JSON.parse(localStorage.getItem('maru3')||'[]');
+const player=new Audio();
+let chain=Promise.resolve();
+function play(...ids){ // play sequentially, returns promise
+  return new Promise(res=>{
+    let i=0; const next=()=>{ if(i>=ids.length) return res();
+      player.src=ids[i++].startsWith('L')||ids[i-1].startsWith('W')?A(ids[i-1]):ids[i-1];
+      player.onended=()=>setTimeout(next,180); player.onerror=()=>next();
+      player.play().catch(()=>next()); };
+    next(); });
+}
+function sfx(type){ // tiny synth sounds, no files
+  try{const c=sfx.c||(sfx.c=new (window.AudioContext||window.webkitAudioContext)());
+  const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+  const t=c.currentTime; g.gain.setValueAtTime(.18,t);
+  if(type==='ok'){o.type='triangle';o.frequency.setValueAtTime(660,t);o.frequency.setValueAtTime(990,t+.1);g.gain.exponentialRampToValueAtTime(.001,t+.35);o.start(t);o.stop(t+.36)}
+  else{o.type='square';o.frequency.setValueAtTime(200,t);o.frequency.linearRampToValueAtTime(140,t+.2);g.gain.exponentialRampToValueAtTime(.001,t+.25);o.start(t);o.stop(t+.26)}}catch(e){}
+}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),1100)}
+function addStar(n=1){stars+=n;$('#starN').textContent=stars}
+function show(id){$$('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+function card(img,label,cls=''){const b=document.createElement('button');b.className='card '+cls;b.innerHTML=`<img src="img/${img}.${img.startsWith('s_')?'jpg':'png'}" alt="">`+(label?`<span>${label}</span>`:'');return b}
+function prog(el,n,f){el.innerHTML='';for(let i=0;i<n;i++){const d=document.createElement('i');if(i<f)d.className='f';el.append(d)}}
+function confetti(){const c=$('#fx'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+  const P=[...Array(140)].map(()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,v:2+Math.random()*4,r:5+Math.random()*7,c:['#ff7aa8','#ffc83d','#3d7bd9','#3bb36b','#e8382f'][Math.random()*5|0],w:Math.random()*6}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.y+=p.v;p.x+=Math.sin((f+p.w)/12)*1.5;x.fillStyle=p.c;x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill()});if(++f<220)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* MAP */
+function refreshMap(){$$('.stop').forEach(s=>{const n=+s.dataset.go;s.classList.toggle('cleared',cleared.includes(n));s.classList.toggle('locked',n>1&&!cleared.includes(n-1))})}
+$$('.stop').forEach(s=>s.onclick=()=>{const n=+s.dataset.go;if(s.classList.contains('locked')){toast('先完成上一關！');return}({1:start1,2:start2,3:start3})[n]()});
+// teacher unlock: long-press title
+let lp;$('header h1').addEventListener('pointerdown',()=>lp=setTimeout(()=>{cleared=[1,2,3];refreshMap();toast('老師模式：全部解鎖')},1500));
+['pointerup','pointerleave'].forEach(e=>$('header h1').addEventListener(e,()=>clearTimeout(lp)));
+$('#homeBtn').onclick=()=>{player.pause();show('s-map');refreshMap()};
+function clear(n){if(!cleared.includes(n))cleared.push(n);try{localStorage.setItem('maru3',JSON.stringify(cleared))}catch(e){}}
+function finish(n,title){clear(n);confetti();$('#doneTitle').textContent=title;show('s-done')}
+$('#doneBtn').onclick=()=>{show('s-map');refreshMap()};
+
+/* STAGE 1 */
+function start1(){const g=$('#learnGrid');g.innerHTML='';const heard=new Set();$('#learnGo').classList.add('hide');
+  WORDS.forEach(w=>{const b=card(w.img,w.t);b.onclick=()=>{play('W_'+w.k);b.classList.add('heard');heard.add(w.k);if(heard.size===WORDS.length)$('#learnGo').classList.remove('hide')};g.append(b)});
+  show('s-1a')}
+$('#learnGo').onclick=()=>{q1=shuffle(WORDS);qi=0;show('s-1b');ask1()};
+let q1=[],qi=0,miss=0;
+function ask1(){const w=q1[qi];prog($('#q1prog'),q1.length,qi);const opts=shuffle([w,...shuffle(WORDS.filter(x=>x!==w)).slice(0,2)]);
+  const g=$('#q1grid');g.innerHTML='';let locked=false;
+  opts.forEach(o=>{const b=card(o.img,'');b.onclick=async()=>{if(locked)return;
+    if(o===w){locked=true;b.classList.add('ok');sfx('ok');addStar();toast('Great! 👍');await play('W_'+w.k);qi++;qi<q1.length?setTimeout(ask1,400):finish(1,'Word Treasure ✔')}
+    else{b.classList.add('no','dim');sfx('no');setTimeout(()=>b.classList.remove('no'),500)}};g.append(b)});
+  $('#q1spk').onclick=()=>play('W_'+w.k);setTimeout(()=>play('W_'+w.k),350)}
+
+/* STAGE 2 */
+let opened=new Set(),cur=null;
+async function start2(){opened=new Set();$$('.door').forEach(d=>d.classList.remove('open'));show('s-2a');await play('L21','L22','L23')}
+$$('.door').forEach(d=>d.onclick=async()=>{const i=+d.dataset.d;if(opened.has(i))return;
+  if(i===3&&opened.size<3){toast('先開其他三扇門！');return}
+  cur=SEASONS[i];await play('L24','L25');$('#clueText').textContent=cur.clue;buildSeason();show('s-2b');play(cur.clueA)});
+$('#clueSpk').onclick=()=>play(cur.clueA);
+function buildSeason(){const g=$('#seasonGrid');g.innerHTML='';let locked=false;
+  SEASONS.forEach(s=>{const b=card(s.img,s.t,'scene');b.onclick=async()=>{if(locked)return;
+    if(s===cur){locked=true;b.classList.add('ok');sfx('ok');addStar();await play(...s.ans);opened.add(SEASONS.indexOf(s));$$('.door')[SEASONS.indexOf(s)].classList.add('open');
+      if(s.k==='winter'){startHide()}else{show('s-2a');$('#doorTitle').textContent=opened.size<3?'Knock, knock! Next door!':'Last door! Where is Maru?'}}
+    else{b.classList.add('no');sfx('no');setTimeout(()=>b.classList.remove('no'),500)}};g.append(b)})}
+function startHide(){const box=$('#snowBox');box.style.backgroundImage='url(img/s_winter.jpg)';box.innerHTML='';
+  const spot=Math.random()*3|0;
+  [10,37,64].forEach((l,i)=>{const m=document.createElement('button');m.className='mound';m.style.left=l+'%';
+    m.innerHTML=`<img class="cat" src="img/maru_peek.png" alt="">${i===spot?'<div class="tail"></div>':''}<img class="pile" src="img/snowpile.png" alt="">`;
+    m.onclick=async()=>{if(m.classList.contains('found'))return;
+      if(i===spot){m.classList.add('found');sfx('ok');addStar(3);await play('L43','L44');finish(2,'You found Maru! 🐱')}
+      else{m.classList.add('puff');sfx('no');toast('Not here!');setTimeout(()=>m.classList.remove('puff'),500)}};box.append(m)});
+  show('s-2c')}
+
+/* STAGE 3 */
+let q3=[],q3i=0;
+function start3(){q3=shuffle(SEASONS);q3i=0;show('s-3a');ask3()}
+function ask3(){const s=q3[q3i];prog($('#q3prog'),4,q3i);const g=$('#q3grid');g.innerHTML='';let locked=false;
+  SEASONS.forEach(o=>{const b=card(o.img,o.t,'scene');b.onclick=async()=>{if(locked)return;
+    if(o===s){locked=true;b.classList.add('ok');sfx('ok');addStar();await play(s.chant);q3i++;q3i<4?ask3():startOrder()}
+    else{b.classList.add('no');sfx('no');setTimeout(()=>b.classList.remove('no'),500)}};g.append(b)});
+  $('#q3spk').onclick=()=>play(s.chant);setTimeout(()=>play(s.chant),350)}
+function startOrder(){const g=$('#orderGrid');g.innerHTML='';let step=0;
+  shuffle(SEASONS).forEach(s=>{const b=card(s.img,s.t,'scene');b.onclick=async()=>{if(b.classList.contains('ok'))return;
+    if(s===SEASONS[step]){b.classList.add('ok');sfx('ok');step++;await play(s.chant);if(step===4){addStar(2);startFlag()}}
+    else{b.classList.add('no');sfx('no');setTimeout(()=>b.classList.remove('no'),500)}};g.append(b)});
+  show('s-3b')}
+function startFlag(){show('s-3c');play('L19')}
+$('#hotDot').onclick=async()=>{sfx('ok');addStar(2);await play('L20','L53','L54');finish(3,'Come and play in Japan! 🇯🇵')};
+$('#flagCat .miss').onclick=()=>{sfx('no');toast('Find the red circle!')};
+
+refreshMap();
+</script>
+</body>
+</html>
