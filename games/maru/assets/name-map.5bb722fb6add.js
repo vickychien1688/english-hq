@@ -1,0 +1,1 @@
+window.MARU_NAMES = {};
