@@ -108,6 +108,62 @@ main{flex:1;position:relative;overflow:hidden}
 #vbox{position:fixed;inset:0;background:rgba(30,20,10,.85);z-index:70;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px}
 #vbox.on{display:flex}
 #vbox iframe{width:min(92vw,150vh);aspect-ratio:16/9;border:0;border-radius:18px;background:#000}
+/* generic stations */
+.g4{grid-template-columns:repeat(4,minmax(0,1fr));width:min(96vw,130vh,1150px)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr));width:min(80vw,90vh,800px)}
+.card.scene img{object-fit:cover;border-radius:14px;aspect-ratio:16/10}
+.card.big4 img{aspect-ratio:16/10}
+.thumbs{display:flex;gap:24px}
+.thumb{border:0;background:#fff;border-radius:24px;box-shadow:0 6px 0 #ead6b3;font-size:clamp(50px,8vw,100px);padding:6px 30px;cursor:pointer}
+.thumb.no{animation:shake .45s;opacity:.4}
+.thumb.ok{outline:6px solid var(--green)}
+.match{display:flex;justify-content:space-between;width:min(92vw,130vh,1000px);gap:20px}
+.match .col{display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);width:42%}
+.mb{border:0;background:#fff;border-radius:18px;box-shadow:0 5px 0 #ead6b3;cursor:pointer;font:inherit;color:var(--ink);height:clamp(64px,14vh,120px);display:flex;align-items:center;justify-content:center;gap:12px;font-weight:800;font-size:clamp(20px,min(3vw,4.4vh),38px);overflow:hidden;padding:0}
+.mb img{height:100%;aspect-ratio:16/10;object-fit:cover}
+.mb img.st{aspect-ratio:1;object-fit:contain;height:86%}
+.mb.sel{outline:6px solid var(--gold)}
+.mb.done{outline:5px solid var(--green);background:#eafff0;pointer-events:none}
+.mb.no{animation:shake .45s}
+.flag{position:relative;width:min(70vw,55vh,560px);aspect-ratio:3/2;background:#fff;border:6px solid var(--ink);border-radius:14px;box-shadow:0 8px 0 #ead6b3;cursor:pointer}
+#flagSun{position:absolute;left:50%;top:50%;width:36%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:#d3202f;border:0;cursor:pointer}
+#flagSun.hintc{animation:glow 1.2s infinite}
+.packTop{display:flex;align-items:center;gap:16px;width:min(96vw,1150px)}
+.packTop>div{flex:1}
+.packTop .big{text-align:left}.packTop .subtitle{text-align:left}
+.packSeason{height:clamp(80px,17vh,170px);border-radius:16px;box-shadow:0 5px 0 #ead6b3}
+.packRow{display:flex;gap:20px;align-items:center;width:min(96vw,1150px)}
+.suitcase{position:relative;width:clamp(180px,26vw,330px);flex:none}
+.suitcase>img{width:100%}
+.suitcase .inCase{position:absolute;left:12%;right:12%;top:34%;bottom:14%;display:flex;gap:4%;align-items:center;justify-content:center}
+.suitcase .inCase img{width:44%;aspect-ratio:1;object-fit:contain;animation:pop .4s;filter:drop-shadow(0 3px 0 rgba(0,0,0,.2))}
+.suitcase.shake{animation:shake .45s}
+.g4i{grid-template-columns:repeat(4,minmax(0,1fr));flex:1}
+.g4i .card img{aspect-ratio:1}
+.sumGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;width:min(96vw,140vh,1200px)}
+.sumCard{background:#fff;border-radius:20px;box-shadow:0 6px 0 #ead6b3;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;font:inherit;color:var(--ink);cursor:pointer}
+.sumCard>img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:14px}
+.sumCard b{font-size:clamp(18px,2.2vw,28px)}
+.sumCard .ic{display:flex;gap:4px;justify-content:center}
+.sumCard .ic img{width:30%;aspect-ratio:1;object-fit:contain}
+.sumCard small{font-size:clamp(13px,1.4vw,18px);line-height:1.2;text-align:center}
+.chart{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;width:min(98vw,1300px)}
+.col4{border-radius:20px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.col4.spring{background:#ffe3ee}.col4.summer{background:#fff1c9}.col4.autumn{background:#ffe0c7}.col4.winter{background:#e0f0ff}
+.col4 h3{margin:0;text-align:center;font-size:clamp(20px,2.4vw,32px)}
+.col4 .lab{font-size:clamp(12px,1.2vw,16px);font-weight:800;opacity:.7;margin:2px 4px -2px}
+.chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.chips.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.chip{border:0;background:#fff;border-radius:12px;padding:4px 2px;cursor:pointer;font:inherit;color:var(--ink);display:flex;flex-direction:column;align-items:center;box-shadow:0 3px 0 rgba(0,0,0,.08)}
+.chip img{width:80%;aspect-ratio:1;object-fit:contain}
+.chip span{font-weight:800;font-size:clamp(11px,1.15vw,16px);line-height:1.05;text-align:center}
+.chip.sel{outline:4px solid var(--green)}
+.myCase{display:flex;gap:10px;min-height:20px}
+.mineRow{display:flex;gap:30px;align-items:center;flex-wrap:wrap;justify-content:center}
+.suitcase.big{width:clamp(220px,30vw,400px)}
+.mineText{display:flex;flex-direction:column;gap:6px;font-size:clamp(24px,min(3.4vw,5vh),44px);font-weight:800}
+.mineText u{text-decoration:none;color:var(--red)}
+@media (max-width:760px){.chart,.sumGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.packRow{flex-direction:column}}
 @media (max-width:760px){.g5{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
@@ -188,6 +244,78 @@ main{flex:1;position:relative;overflow:hidden}
     <div class="tiles" id="tiles"></div>
   </section>
 
+  <!-- ===== GENERIC SCREENS (stations 2-5) ===== -->
+  <section class="screen" id="g-intro">
+    <div class="steps gsteps"></div>
+    <p class="big" id="giTitle"></p>
+    <div class="grid" id="giPics"></div>
+    <div class="row" id="giSays"></div>
+    <div class="row"><button class="watch" id="giClip">▶ Watch 看這一段</button><button class="cta" id="giGo">Next ▶</button></div>
+  </section>
+  <section class="screen" id="g-learn">
+    <div class="steps gsteps"></div>
+    <p class="big">Tap and listen!</p>
+    <div class="grid" id="glGrid"></div>
+    <p class="subtitle" id="glSub"></p>
+    <button class="cta hide" id="glGo">Next ▶</button>
+  </section>
+  <section class="screen" id="g-pick">
+    <div class="steps gsteps"></div>
+    <div class="progress" id="gpProg"></div>
+    <div class="row"><img class="sentpic" id="gpPic" src="" alt="" style="display:none"><p class="big" id="gpTitle"></p><button class="spk" id="gpSpk">🔊</button></div>
+    <div class="grid" id="gpGrid"></div>
+    <p class="subtitle" id="gpSub"></p>
+  </section>
+  <section class="screen" id="g-match">
+    <div class="steps gsteps"></div>
+    <div class="row"><p class="big">Match them!</p><button class="spk" id="gmSpk">🔊</button></div>
+    <p class="sub">Tap one on the left, then its partner on the right. 左邊點一個，再點右邊的好朋友</p>
+    <div class="match"><div class="col" id="gmL"></div><div class="col" id="gmR"></div></div>
+  </section>
+  <section class="screen" id="g-flag">
+    <div class="steps gsteps"></div>
+    <div class="row"><p class="big" id="gfTitle">That's Japan's flag!</p><button class="spk" id="gfSpk">🔊</button></div>
+    <div class="flag" id="flagBox"><button id="flagSun"></button></div>
+    <p class="subtitle" id="gfSub"></p>
+  </section>
+  <section class="screen" id="g-pack">
+    <div class="steps gsteps"></div>
+    <div class="progress" id="pkProg"></div>
+    <div class="packTop"><img class="packSeason" id="pkSeason" src="" alt=""><div><p class="big" id="pkTitle"></p><p class="subtitle" id="pkClue"></p></div><button class="spk" id="pkSpk">🔊</button></div>
+    <div class="packRow"><div class="suitcase" id="pkCase"><img src="img/w_suitcase.png" alt=""><div class="inCase" id="pkIn"></div></div><div class="grid g4i" id="pkItems"></div></div>
+  </section>
+  <section class="screen" id="g-sent">
+    <div class="steps gsteps"></div>
+    <div class="progress" id="gsProg"></div>
+    <div class="row"><img class="sentpic" id="gsPic" src="" alt=""><button class="spk" id="gsSpk">🔊</button></div>
+    <div class="sent" id="gsBox"></div>
+    <div class="tiles" id="gsTiles"></div>
+  </section>
+  <section class="screen" id="g-sum">
+    <div class="steps gsteps"></div>
+    <p class="big" id="gsumTitle"></p>
+    <div class="sumGrid" id="gsumGrid"></div>
+    <button class="cta" id="gsumGo">Next ▶</button>
+  </section>
+  <!-- station 5 -->
+  <section class="screen" id="g-chart">
+    <p class="big">My Suitcase Word Bank</p>
+    <p class="sub">Tap and listen! 點一點聽一聽，寫作時可以從這裡挑字</p>
+    <div class="chart" id="chart"></div>
+    <div class="row"><a class="hbtn" href="print.html" target="_blank">🖨 Print 列印圖卡表</a><button class="cta" id="chartGo">Make my suitcase ▶</button></div>
+  </section>
+  <section class="screen" id="g-build">
+    <div class="steps gsteps"></div>
+    <div class="row"><p class="big" id="gbTitle"></p><button class="spk" id="gbSpk">🔊</button></div>
+    <div class="grid" id="gbGrid"></div>
+    <div class="myCase" id="gbCase"></div>
+  </section>
+  <section class="screen" id="g-mine">
+    <p class="big">My Suitcase!</p>
+    <div class="mineRow"><div class="suitcase big" id="mineCase"><img src="img/w_suitcase.png" alt=""><div class="inCase" id="mineIn"></div></div><div class="mineText" id="mineText"></div></div>
+    <div class="row"><button class="spk" id="mineSpk">🔊</button><button class="hbtn" id="mineAgain">↻ Try another season 再做一次</button><a class="hbtn" href="print.html" target="_blank">🖨 Print 列印圖卡表</a><button class="cta" id="mineDone">Finish ▶</button></div>
+  </section>
+
   <!-- station summary -->
   <section class="screen" id="s-done">
     <div class="heroRow"><img class="av" src="img/leo_cheer.png" alt=""><img class="case" src="img/w_suitcase.png" alt=""><img class="av" src="img/nina_wave.png" alt=""></div>
@@ -252,7 +380,7 @@ function bad(){sfx('no');cheer(false)}
 function show(id){$$('.screen').forEach(s=>s.classList.toggle('on',s.id===id));buddy.classList.toggle('on',id!=='s-home')}
 function steps(el,cur){const n=5;el.innerHTML='';for(let i=1;i<=n;i++){const d=document.createElement('i');d.textContent=i;if(i<cur)d.className='f';if(i===cur)d.className='c';el.append(d)}}
 function prog(el,n,f){el.innerHTML='';for(let i=0;i<n;i++){const d=document.createElement('i');if(i<f)d.className='f';el.append(d)}}
-function card(img,label,cls=''){const b=document.createElement('button');b.className='card '+cls;b.innerHTML=`<img src="img/${img}.png" alt="">`+(label?`<span>${label}</span>`:'');return b}
+function card(img,label,cls=''){const b=document.createElement('button');b.className='card '+cls;b.innerHTML=`<img src="img/${img.includes('.')?img:img+'.png'}" alt="">`+(label?`<span>${label}</span>`:'');return b}
 function confetti(){const c=$('#fx'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
   const P=[...Array(140)].map(()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,v:2+Math.random()*4,r:5+Math.random()*7,c:['#ff7aa8','#ffc83d','#3d7bd9','#3bb36b','#e8382f'][Math.random()*5|0],w:Math.random()*6}));
   let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.y+=p.v;p.x+=Math.sin((f+p.w)/12)*1.5;x.fillStyle=p.c;x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill()});if(++f<220)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
@@ -265,7 +393,7 @@ $('#soundTest').onclick=()=>play('I_great');
 function refresh(){$$('.stop').forEach(s=>{const n=+s.dataset.go;s.classList.toggle('cleared',cleared.includes(n));s.classList.toggle('locked',n>1&&!cleared.includes(n-1))})}
 refresh();
 $$('.stop').forEach(s=>s.onclick=()=>{const n=+s.dataset.go;if(s.classList.contains('locked')){toast(n>1&&cleared.includes(n-1)?'Coming soon! 製作中':'先完成上一站！');return}
-  if(n===1)start1w();else toast('Coming soon! 製作中')});
+  ({1:start1w,2:start2,3:start3,4:start4,5:start5})[n]()});
 let lp;$('header h1').addEventListener('pointerdown',()=>lp=setTimeout(()=>{cleared=[1,2,3,4,5];refresh();toast('老師模式：全部解鎖')},1500));
 ['pointerup','pointerleave'].forEach(e=>$('header h1').addEventListener(e,()=>clearTimeout(lp)));
 $('#homeBtn').onclick=()=>{stopAudio();show('s-home');refresh()};
@@ -318,11 +446,11 @@ function startIslands(){steps($('#st3b'),3);const box=$('#isChoices');box.innerH
   $('#isSpk').onclick=()=>play('I_islands');show('s-1i');play('I_islands')}
 // step 4 listen & choose (4 listen) + read & choose (4 read)
 let qs=[],qi=0;
-function start1q(){steps($('#st4'),4);const pick=shuffle(W1).slice(0,8);qs=pick.map((w,i)=>({w,mode:i<4?'listen':'read'}));qi=0;show('s-1q');ask()}
+function start1q(){steps($('#st4'),4);const pick=shuffle(W1.filter(w=>w.k!=='country')).slice(0,8);qs=pick.map((w,i)=>({w,mode:i<4?'listen':'read'}));qi=0;show('s-1q');ask()}
 function ask(){const {w,mode}=qs[qi];prog($('#qprog'),qs.length,qi);const h=$('#qHead');h.innerHTML='';
   if(mode==='listen'){h.innerHTML='<button class="spk" id="qSpk">🔊</button><p class="big">Listen and choose!</p>';$('#qSpk').onclick=()=>play('W_'+w.k)}
   else h.innerHTML=`<p class="sub">Read and choose! 讀一讀，選圖</p><p class="wordq">${w.t}</p>`;
-  const JP=['japan','country','capital','honshu','hokkaido'];const pool=shuffle(W1.filter(x=>x!==w&&x.line!==w.line));const ds=[];for(const x of pool){if(ds.length===2)break;if(JP.includes(x.k)&&(JP.includes(w.k)||ds.some(d=>JP.includes(d.k))))continue;ds.push(x)}const opts=shuffle([w,...ds]);const g=$('#qGrid');g.innerHTML='';let locked=false,miss=0;
+  const JP=['japan','country','capital','honshu','hokkaido'];const pool=shuffle(W1.filter(x=>x!==w&&x.line!==w.line&&x.k!=='country'));const ds=[];for(const x of pool){if(ds.length===2)break;if(JP.includes(x.k)&&(JP.includes(w.k)||ds.some(d=>JP.includes(d.k))))continue;ds.push(x)}const opts=shuffle([w,...ds]);const g=$('#qGrid');g.innerHTML='';let locked=false,miss=0;
   opts.forEach(o=>{const b=card(o.img,'');b.onclick=async()=>{if(locked)return;
     if(o===w){locked=true;b.classList.add('ok');good();await play('W_'+w.k);qi++;qi<qs.length?setTimeout(ask,300):start1s()}
     else{b.classList.add('no','dim');bad();miss++;if(miss>=1&&mode==='listen')setTimeout(()=>play('W_'+w.k),400)}};g.append(b)});
@@ -343,6 +471,7 @@ function done1(){clearSt(1);confetti();addStar(3);$('#doneTitle').textContent='S
     const b=document.createElement('button');b.className='say';b.innerHTML=`<img src="img/${i}.png" alt="" style="border-radius:0;object-fit:contain;background:#fff"><span>🔊 ${t}</span>`;b.onclick=()=>play(a);L.append(b)});
   show('s-done');play('I_great')}
 $('#doneBtn').onclick=()=>{show('s-home');refresh()};
+/*STUBS*/['start2','start3','start4','start5'].forEach(f=>{if(typeof window[f]!=='function')window[f]=()=>toast('Coming soon! 製作中')});
 </script>
 </body>
 </html>
