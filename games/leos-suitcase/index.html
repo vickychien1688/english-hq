@@ -164,6 +164,19 @@ main{flex:1;position:relative;overflow:hidden}
 .mineText{display:flex;flex-direction:column;gap:6px;font-size:clamp(24px,min(3.4vw,5vh),44px);font-weight:800}
 .mineText u{text-decoration:none;color:var(--red)}
 @media (max-width:760px){.chart,.sumGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.packRow{flex-direction:column}}
+/* fix: pick header in one line, nothing cut */
+#g-pick .row{flex-wrap:nowrap;width:min(96vw,1150px);justify-content:center}
+#g-pick .row .big{flex:0 1 auto;min-width:0;font-size:clamp(22px,min(3.4vw,5vh),44px)}
+#gpPic{height:clamp(70px,15vh,150px);width:auto;max-width:28vw;border-radius:14px;box-shadow:0 5px 0 #ead6b3;flex:none}
+.screen{overflow-x:hidden}
+.screen>*{max-width:100%}
+.grid{max-width:96vw}
+.oopsBox{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;width:min(96vw,1150px)}
+.oopsPic{width:min(44vw,44vh,520px)}
+.oopsSay{max-width:min(46vw,460px)}
+.oopsSay .say span{font-size:clamp(18px,min(2.4vw,3.4vh),30px)}
+.oopsBox .full{flex-basis:100%;display:flex;justify-content:center}
+.oopsBox .grid.full{display:grid;width:min(90vw,90vh,800px);flex-basis:auto}
 @media (max-width:760px){.g5{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
@@ -488,7 +501,7 @@ const SEA=[
 const ITEM={umbrella:'umbrella',raincoat:'raincoat',basket:'picnic basket',kite:'kite',camera:'camera',sneakers:'sneakers',swimring:'swim ring',shirt:'summer shirt',sunhat:'sun hat',sunglasses:'sunglasses',fan:'fan',sandals:'sandals',jacket:'jacket',sweater:'sweater',backpack:'backpack',bottle:'water bottle',coat:'coat',skis:'skis',scarf:'scarf',gloves:'gloves',boots:'boots',winterhat:'winter hat'};
 const DO={cherry:'see cherry blossoms',picnic:'have a picnic',swim:'swim',fireworks:'watch fireworks',leaves:'see red and yellow leaves',hiking:'go hiking',ski:'ski',snowman:'make a snowman'};
 const WXS={warm:'S_springwarm',hot:'S_summerhot',cool:'S_autumncool',cold:'S_wintercold'};
-const MORE=['W_spring','W_summer','W_autumn','W_winter','W_warm','W_hot','W_cool','W_cold','W_cherry','W_fireworks','W_leaves','W_ski','W_flag','W_sun','W_picnic','W_swim','W_hiking','W_snowman',...Object.keys(ITEM).map(k=>'W_'+k),'S_springwarm','S_summerhot','S_autumncool','S_wintercold',...SEA.flatMap(x=>[x.clue,x.pack]),'I_order4','I_whatpack','I_okay','I_match','I_help','I_pick_season','I_pick_do','I_pick_two','I_sentence','I_flag','N_wrong',...SEA.map(x=>'B_like_'+x.k),...['warm','hot','cool','cold'].map(w=>'B_its_'+w),...Object.keys(DO).map(k=>'B_can_'+k),...Object.keys(ITEM).flatMap(k=>['B_pack_'+k,'B_and_'+k])];
+const MORE=['W_spring','W_summer','W_autumn','W_winter','W_warm','W_hot','W_cool','W_cold','W_cherry','W_fireworks','W_leaves','W_ski','W_flag','W_sun','W_picnic','W_swim','W_hiking','W_snowman',...Object.keys(ITEM).map(k=>'W_'+k),'S_springwarm','S_summerhot','S_autumncool','S_wintercold',...SEA.flatMap(x=>[x.clue,x.pack]),'I_order4','I_whatpack','I_okay','I_match','I_help','I_pick_season','I_pick_do','I_pick_two','I_sentence','I_flag','N_wrong','I_why',...SEA.map(x=>'S_oops_'+x.k),...SEA.map(x=>'B_like_'+x.k),...['warm','hot','cool','cold'].map(w=>'B_its_'+w),...Object.keys(DO).map(k=>'B_can_'+k),...Object.keys(ITEM).flatMap(k=>['B_pack_'+k,'B_and_'+k])];
 MORE.forEach(loadBuf);
 let ST=0;
 function gsteps(cur,n=5){$$('.gsteps').forEach(el=>steps2(el,cur,n))}
@@ -548,9 +561,26 @@ function s2order(){gsteps(3);const g=$('#gpGrid');prog($('#gpProg'),0,0);$('#gpP
     if(x===SEA[step]){$$('#gpGrid .card').forEach(c=>c.classList.remove('hintc'));b.classList.add('ok');sfx('ok');step++;miss=0;await play('W_'+x.k);if(step===4){good();await wait(300);s2what()}}
     else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450);miss++;if(miss>=2){const nx=$$('#gpGrid .card').find(c=>c.dataset.k===SEA[step].k);nx&&nx.classList.add('hintc')}}};g.append(b)});
   $('#gpSpk').onclick=()=>play('I_order4');show('g-pick');play('I_order4')}
-function s2what(){gsteps(4);const leoItems=SEA.map(x=>({img:x.wrong,scene:1,k:x.k}));
-  gPick(SEA.map(x=>({title:`It's ${x.t}! What did Leo pack?`,pic:x.sc,ask:[x.ask],cols:'g4',opts:shuffle(leoItems.map(o=>({...o,ok:o.k===x.k}))),okA:[x.leo,x.react],
-    then:()=>thumbs([x.wS],{spring:'Spring is warm. No snow! Skis? 👎',summer:'Summer is hot. A big coat? 👎',autumn:'Autumn is cool. No swimming! A swim ring? 👎',winter:'Winter is cold. A summer shirt? 👎'}[x.k])})),s2match)}
+const OOPS={spring:['his skis','My skis!'],summer:['a big coat','My big coat!'],autumn:['a swim ring','My swim ring!'],winter:['a summer shirt','My summer shirt!']};
+function s2what(){gsteps(4);let r=0;const run=async()=>{const x=SEA[r];prog($('#gpProg'),4,r);
+  const pic=$('#gpPic');pic.src='img/'+x.sc;pic.style.display='';$('#gpTitle').innerHTML=`It's ${x.t}! Leo packs <span style="color:var(--red)">${OOPS[x.k][0]}</span>.`;$('#gpSub').innerHTML='';
+  const g=$('#gpGrid');g.className='oopsBox';g.innerHTML='';const b=card(x.wrong,'','scene');b.style.pointerEvents='none';b.classList.add('oopsPic');g.append(b);
+  const say=document.createElement('div');say.className='oopsSay';
+  say.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px;justify-content:center;height:100%"><button class="say" data-a="${x.ask}"><img src="img/nina_head.png" alt=""><span>What should Leo pack?</span></button><button class="say" data-a="${x.leo}"><img src="img/leo_head.png" alt=""><span>${OOPS[x.k][1]}</span></button></div>`;
+  g.append(say);say.querySelectorAll('.say').forEach(e=>e.onclick=()=>play(e.dataset.a));
+  $('#gpSpk').onclick=()=>play('S_oops_'+x.k);show('g-pick');
+  await play(x.ask,x.leo,x.react,'S_oops_'+x.k);
+  // step: Is it OK?
+  const ok=await new Promise(res=>{const T=document.createElement('div');T.className='thumbs full';
+    [['👍',false],['👎',true]].forEach(([e,isOk])=>{const t=document.createElement('button');t.className='thumb';t.textContent=e;t.onclick=async()=>{if(!isOk){t.classList.add('no');bad();play('I_try');return}
+      t.classList.add('ok');good();T.remove();res(true)};T.append(t)});g.append(T);$('#gpSub').innerHTML='Is it OK? 這樣對嗎？';play('I_okay')});
+  // step: Why? choose weather
+  $('#gpSub').innerHTML=`Why? ${x.t[0].toUpperCase()+x.t.slice(1)} is ___.`;play('I_why');
+  const W=document.createElement('div');W.className='grid g4 full';let miss=0;
+  ['warm','hot','cool','cold'].forEach(w=>{const c=card('wx_'+w,w);if(w===x.wx)c.dataset.ok=1;c.onclick=async()=>{if(W.dataset.done)return;
+    if(w===x.wx){W.dataset.done=1;c.classList.add('ok');good();$('#gpSub').innerHTML=`<b>${x.t[0].toUpperCase()+x.t.slice(1)} is ${x.wx}.</b> Oops, Leo! 😅`;await play(WXS[x.wx]);await wait(500);r++;r<4?run():s2match()}
+    else{c.classList.add('no');bad();setTimeout(()=>c.classList.remove('no'),450);miss++;if(miss>=2)W.querySelector('[data-ok]').classList.add('hintc');play('I_try')}};W.append(c)});
+  g.append(W)};run()}
 function s2match(){gsteps(5);gMatch(SEA.map(x=>({L:{img:x.sc,a:'W_'+x.k},R:{img:'wx_'+x.wx,t:x.wx},a:[WXS[x.wx]]})),()=>finishSt(2,'Station 2 clear! 🧳',[
   ['S_springwarm','Spring is warm.','wx_warm'],['S_summerhot','Summer is hot.','wx_hot'],['S_autumncool','Autumn is cool.','wx_cool'],['S_wintercold','Winter is cold.','wx_cold']]))}
 
