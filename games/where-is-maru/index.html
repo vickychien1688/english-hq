@@ -140,7 +140,7 @@ main{flex:1;position:relative;overflow:hidden}
 <div id="app">
 <header>
   <button class="hbtn" id="homeBtn">🏠 Map</button>
-  <h1>Where Is Maru? 闖關大冒險</h1>
+  <h1>Where Is Maru?</h1>
   <div class="stars">⭐ <span id="starN">0</span></div>
 </header>
 <main>
@@ -171,7 +171,7 @@ main{flex:1;position:relative;overflow:hidden}
     <p class="sub" id="jaSub">Tap the map! 在地圖上點一點</p>
   </section>
   <section class="screen" id="s-jb">
-    <p class="big">Konnichiwa! 跟 Maru 打招呼</p>
+    <p class="big">Say Konnichiwa to Maru!</p>
     <div class="hello"><img src="img/maru_wave.png" alt=""><button class="miss" id="helloTap"></button></div>
     <div class="hearts" id="hearts"></div>
     <p class="sub">Tap Maru and say "Konnichiwa!" 點 Maru，一起說 Konnichiwa</p>
@@ -190,7 +190,7 @@ main{flex:1;position:relative;overflow:hidden}
 
   <!-- STAGE 1: learn -->
   <section class="screen" id="s-1a">
-    <p class="big">Tap and listen! 點一點，聽一聽</p>
+    <p class="big">Tap and listen!</p>
     <div class="grid g7" id="learnGrid"></div>
     <button class="cta hide" id="learnGo">Let's play! ▶</button>
   </section>
@@ -220,7 +220,7 @@ main{flex:1;position:relative;overflow:hidden}
     <div class="grid g4" id="seasonGrid"></div>
   </section>
   <section class="screen" id="s-2c">
-    <p class="big">Where is Maru? 找到 Maru！</p>
+    <p class="big">Where is Maru?</p>
     <div class="snow" id="snowBox"></div>
     <p class="sub">Look for the red circle! 找紅色圓圈</p>
   </section>
@@ -376,11 +376,11 @@ $('#flagCat .miss').onclick=()=>{sfx('no');toast('Find the red circle!')};
 /* FIND JAPAN */
 let jaStep=0, mapReady=fetch('img/asia_map.svg').then(r=>r.text()).then(t=>{$('#mapSvg').innerHTML=t});
 async function startJ(){await mapReady;jaStep=0;['map-tw','map-jp'].forEach(id=>{const p=document.getElementById(id);if(p)p.setAttribute('fill','#f6e7c4')});
-  $('#plane').style.display='none';$('#jaTitle').textContent='Where is Taiwan? 台灣在哪裡？';$('#zTW').classList.remove('hint');$('#zJP').classList.remove('hint');
+  $('#plane').style.display='none';$('#jaTitle').textContent='Where is Taiwan?';$('#zTW').classList.remove('hint');$('#zJP').classList.remove('hint');
   show('s-ja');play('W_taiwan')}
 $('#zTW').onclick=async()=>{if(jaStep!==0){if(jaStep===1){sfx('no');toast('That is Taiwan!')}return}
   jaStep=-1;$('#zTW').classList.remove('hint');document.getElementById('map-tw').setAttribute('fill','#8fdc9b');sfx('ok');addStar();
-  await play('L03');jaStep=1;$('#jaTitle').textContent='Where is Japan? 日本在哪裡？';play('L04')};
+  await play('L03');jaStep=1;$('#jaTitle').textContent='Where is Japan?';play('L04')};
 $('#zJP').onclick=async()=>{if(jaStep!==1){if(jaStep===0){sfx('no');toast('Find Taiwan first!')}return}
   jaStep=-1;$('#zJP').classList.remove('hint');document.getElementById('map-jp').setAttribute('fill','#ff9fbf');sfx('ok');addStar();
   await play('L05','L06','L07','L08');$('#jaTitle').textContent="Let's go to Japan! ✈️";
