@@ -285,14 +285,20 @@ const BUF={}; let curSrc=null, playToken=0;
 const ALL_IDS=[...Array(55)].map((_,i)=>'L'+String(i+1).padStart(2,'0')).concat(WORDS.map(w=>'W_'+w.k));
 async function loadBuf(id){if(BUF[id])return BUF[id];try{const r=await fetch(A(id));const ab=await r.arrayBuffer();BUF[id]=await new Promise((ok,no)=>AC.decodeAudioData(ab,ok,no))}catch(e){BUF[id]=null}return BUF[id]}
 ALL_IDS.forEach(loadBuf);
-function unlock(){if(AC.state!=='running')AC.resume()}
-['pointerdown','touchstart','keydown'].forEach(e=>addEventListener(e,unlock,{passive:true,capture:true}));
-function stopAudio(){playToken++;if(curSrc){try{curSrc.stop()}catch(e){}curSrc=null}}
+function unlock(){try{if(AC.state!=='running'){AC.resume();const b=AC.createBuffer(1,1,22050),s=AC.createBufferSource();s.buffer=b;s.connect(AC.destination);s.start(0)}}catch(e){}}
+['pointerdown','pointerup','mousedown','touchstart','touchend','click','keydown'].forEach(e=>addEventListener(e,unlock,{passive:true,capture:true}));
+let curEl=null;
+function stopAudio(){playToken++;if(curSrc){try{curSrc.stop()}catch(e){}curSrc=null}if(curEl){try{curEl.pause()}catch(e){}curEl=null}}
+function playEl(id){return new Promise(res=>{const a=new Audio(`audio/${id}.mp3`);curEl=a;let done=false;const fin=()=>{if(!done){done=true;res()}};a.onended=fin;a.onerror=fin;
+  a.play().then(()=>{setTimeout(fin,((a.duration||8)+1)*1000)}).catch(fin)})}
 async function play(...ids){stopAudio();const tok=playToken;unlock();
-  for(const id of ids){if(tok!==playToken)return;const b=await loadBuf(id);if(!b||tok!==playToken)continue;
-    await new Promise(res=>{const s=AC.createBufferSource();s.buffer=b;s.connect(AC.destination);s.onended=res;curSrc=s;s.start();});
-    if(tok!==playToken)return; await new Promise(r=>setTimeout(r,150));}
-}
+  for(const id of ids){if(tok!==playToken)return false;
+    if(AC.state!=='running'){await new Promise(r=>setTimeout(r,60))}
+    if(AC.state==='running'){const b=await loadBuf(id);if(tok!==playToken)return false;
+      if(b){await new Promise(res=>{const s=AC.createBufferSource();s.buffer=b;s.connect(AC.destination);s.onended=res;curSrc=s;s.start();setTimeout(res,b.duration*1000+600)})}else await playEl(id)}
+    else await playEl(id);
+    if(tok!==playToken)return false;await new Promise(r=>setTimeout(r,150))}
+  return true}
 function sfx(type){ // tiny synth sounds, no files
   try{const c=AC;
   const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
