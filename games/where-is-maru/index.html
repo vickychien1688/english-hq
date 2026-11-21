@@ -126,6 +126,11 @@ main{flex:1;position:relative;overflow:hidden}
 .mc .fa{background:#fff;transform:rotateY(180deg);font-weight:800;font-size:clamp(16px,min(2.2vw,3.4vh),30px);text-align:center;padding:4px}
 .mc .fa img{width:84%;height:84%;object-fit:contain}
 .mc.got .fa{outline:5px solid var(--green)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr));width:min(80vw,78vh,760px)}
+#seasonGrid.g2,#q3grid.g2{width:min(80vw,72vh,760px)}
+.learn6{width:min(90vw,80vh,820px)}
+.mem.mem8{width:min(86vw,110vh,900px)}
+.card.hintc{animation:glow 1.2s infinite}
 .g7{grid-template-columns:repeat(7,minmax(0,1fr));width:min(96vw,175vh,1400px)}
 .g7 .card span{white-space:normal;text-align:center}
 @media (max-width:700px){.g4{grid-template-columns:repeat(2,1fr)}}
@@ -174,12 +179,12 @@ main{flex:1;position:relative;overflow:hidden}
   <!-- MATCH -->
   <section class="screen" id="s-m">
     <div class="progress" id="mprog"></div>
-    <p class="sub">Tap a picture, then tap the word! 先點圖，再點英文字</p>
+    <p class="sub" id="mSub">Tap a picture, then tap the word! 先點圖，再點英文字</p>
     <div class="match" id="matchBox"><svg id="lines"></svg><div class="col" id="mL"></div><div class="col" id="mR"></div></div>
   </section>
   <!-- MEMORY -->
   <section class="screen" id="s-mem">
-    <p class="sub">Find the pairs! 翻兩張，找出一樣的（圖＋字）</p>
+    <p class="sub" id="memSub">Find the pairs! 翻兩張，找出一樣的</p>
     <div class="mem" id="memGrid"></div>
   </section>
 
@@ -264,6 +269,15 @@ const SEASONS=[
  {k:'summer',t:'summer',img:'s_summer',clue:'Boom!',clueA:'L31',ans:['L32','L33'],chant:'L46'},
  {k:'autumn',t:'autumn',img:'s_autumn',clue:'Red! Yellow!',clueA:'L36',ans:['L37','L38'],chant:'L47'},
  {k:'winter',t:'winter',img:'s_winter',clue:"It's cold!",clueA:'L41',ans:['L42'],chant:'L48'}];
+/* 難度：預設 Starter／Level 1 簡單版；網址加 ?lv=2 是較難的 Level 2 版型 */
+const HARD=new URLSearchParams(location.search).get('lv')==='2';
+const EASY_WORDS=['cat','flag','sun','door','snow','fireworks'];
+const QW=HARD?WORDS:WORDS.filter(w=>EASY_WORDS.includes(w.k));
+const NOPT=HARD?3:2;
+const NQ=HARD?8:6;
+const MPAIR=HARD?4:3;
+const MEMPAIR=HARD?6:4;
+function seasonOpts(right){return HARD?SEASONS:shuffle([right,shuffle(SEASONS.filter(x=>x!==right))[0]])}
 let stars=0, cleared=JSON.parse(localStorage.getItem('maru6')||'[]');
 /* audio engine: everything decoded once up front, so taps play instantly */
 const AC=new (window.AudioContext||window.webkitAudioContext)();
@@ -309,12 +323,12 @@ $('#doneBtn').onclick=()=>{show('s-map');refreshMap()};
 
 /* STAGE 1 */
 function start1(){const g=$('#learnGrid');g.innerHTML='';const heard=new Set();$('#learnGo').classList.add('hide');
-  WORDS.forEach(w=>{const b=card(w.img,w.t);b.onclick=()=>{play('W_'+w.k);b.classList.add('heard');heard.add(w.k);if(heard.size===WORDS.length)$('#learnGo').classList.remove('hide')};g.append(b)});
+  g.className='grid '+(HARD?'g7':'g3 learn6');QW.forEach(w=>{const b=card(w.img,w.t);b.onclick=()=>{play('W_'+w.k);b.classList.add('heard');heard.add(w.k);if(heard.size===QW.length)$('#learnGo').classList.remove('hide')};g.append(b)});
   show('s-1a')}
-$('#learnGo').onclick=()=>{q1=shuffle(WORDS).slice(0,8);qi=0;show('s-1b');ask1()};
+$('#learnGo').onclick=()=>{q1=shuffle(QW).slice(0,NQ);qi=0;show('s-1b');ask1()};
 let q1=[],qi=0,miss=0;
-function ask1(){const w=q1[qi];prog($('#q1prog'),q1.length,qi);const opts=shuffle([w,...shuffle(WORDS.filter(x=>x!==w)).slice(0,2)]);
-  const g=$('#q1grid');g.innerHTML='';let locked=false;
+function ask1(){const w=q1[qi];prog($('#q1prog'),q1.length,qi);const opts=shuffle([w,...shuffle(QW.filter(x=>x!==w)).slice(0,NOPT-1)]);
+  const g=$('#q1grid');g.innerHTML='';g.className='grid '+(NOPT===2?'g2':'g3');let locked=false;
   opts.forEach(o=>{const b=card(o.img,'');b.onclick=async()=>{if(locked)return;
     if(o===w){locked=true;b.classList.add('ok');sfx('ok');addStar();toast('Great! 👍');await play('W_'+w.k);qi++;qi<q1.length?setTimeout(ask1,400):finish(2,'Word Treasure ✔')}
     else{b.classList.add('no','dim');sfx('no');setTimeout(()=>b.classList.remove('no'),500)}};g.append(b)});
@@ -327,8 +341,8 @@ $$('.door').forEach(d=>d.onclick=async()=>{const i=+d.dataset.d;if(opened.has(i)
   if(i===3&&opened.size<3){toast('先開其他三扇門！');return}
   cur=SEASONS[i];await play('L24','L25');$('#clueText').textContent=cur.clue;buildSeason();show('s-2b');play(cur.clueA)});
 $('#clueSpk').onclick=()=>play(cur.clueA);
-function buildSeason(){const g=$('#seasonGrid');g.innerHTML='';let locked=false;
-  SEASONS.forEach(s=>{const b=card(s.img,s.t,'scene');b.onclick=async()=>{if(locked)return;
+function buildSeason(){const g=$('#seasonGrid');g.innerHTML='';g.className='grid '+(HARD?'g4':'g2');let locked=false;
+  seasonOpts(cur).forEach(s=>{const b=card(s.img,s.t,'scene');b.onclick=async()=>{if(locked)return;
     if(s===cur){locked=true;b.classList.add('ok');sfx('ok');addStar();await play(...s.ans);opened.add(SEASONS.indexOf(s));$$('.door')[SEASONS.indexOf(s)].classList.add('open');
       if(s.k==='winter'){startHide()}else{show('s-2a');$('#doorTitle').textContent=opened.size<3?'Knock, knock! Next door!':'Last door! Where is Maru?'}}
     else{b.classList.add('no');sfx('no');setTimeout(()=>b.classList.remove('no'),500)}};g.append(b)})}
@@ -344,15 +358,15 @@ function startHide(){const box=$('#snowBox');box.style.backgroundImage='url(img/
 /* STAGE 3 */
 let q3=[],q3i=0;
 function start3(){q3=shuffle(SEASONS);q3i=0;show('s-3a');ask3()}
-function ask3(){const s=q3[q3i];prog($('#q3prog'),4,q3i);const g=$('#q3grid');g.innerHTML='';let locked=false;
-  SEASONS.forEach(o=>{const b=card(o.img,o.t,'scene');b.onclick=async()=>{if(locked)return;
+function ask3(){const s=q3[q3i];prog($('#q3prog'),4,q3i);const g=$('#q3grid');g.innerHTML='';g.className='grid '+(HARD?'g4':'g2');let locked=false;
+  seasonOpts(s).forEach(o=>{const b=card(o.img,o.t,'scene');b.onclick=async()=>{if(locked)return;
     if(o===s){locked=true;b.classList.add('ok');sfx('ok');addStar();await play(s.chant);q3i++;q3i<4?ask3():startOrder()}
     else{b.classList.add('no');sfx('no');setTimeout(()=>b.classList.remove('no'),500)}};g.append(b)});
   $('#q3spk').onclick=()=>play(s.chant);setTimeout(()=>play(s.chant),350)}
 function startOrder(){const g=$('#orderGrid');g.innerHTML='';let step=0;
   shuffle(SEASONS).forEach(s=>{const b=card(s.img,s.t,'scene');b.onclick=async()=>{if(b.classList.contains('ok'))return;
-    if(s===SEASONS[step]){b.classList.add('ok');sfx('ok');step++;await play(s.chant);if(step===4){addStar(2);startFlag()}}
-    else{b.classList.add('no');sfx('no');setTimeout(()=>b.classList.remove('no'),500)}};g.append(b)});
+    if(s===SEASONS[step]){$$('#orderGrid .card').forEach(x=>x.classList.remove('hintc'));b.classList.add('ok');sfx('ok');step++;await play(s.chant);if(step===4){addStar(2);startFlag()}}
+    else{b.classList.add('no');sfx('no');setTimeout(()=>b.classList.remove('no'),500);if(!HARD){const nx=[...$$('#orderGrid .card')].find(x=>x.dataset.k===SEASONS[step].k);nx&&nx.classList.add('hintc')}}};b.dataset.k=s.k;g.append(b)});
   show('s-3b')}
 function startFlag(){show('s-3c');play('L19')}
 $('#hotDot').onclick=async()=>{sfx('ok');addStar(2);await play('L20','L53','L54');finish(6,'Come and play in Japan! 🇯🇵')};
@@ -381,15 +395,15 @@ $('#helloTap').onclick=async()=>{if(hi>=3)return;hi++;$('#hearts').textContent='
 
 /* MATCH 連連看 */
 let mRound=0,mSets=[],mSel=null;
-function startM(){const pick=shuffle(WORDS).slice(0,8);mSets=[pick.slice(0,4),pick.slice(4,8)];mRound=0;show('s-m');buildM()}
+function startM(){const pick=shuffle(QW).slice(0,MPAIR*2);mSets=[pick.slice(0,MPAIR),pick.slice(MPAIR,MPAIR*2)];mRound=0;$('#mSub').textContent=HARD?'Tap a picture, then tap the word! 先點圖，再點英文字':'Find the same picture! 左邊點一張，右邊找一樣的';show('s-m');buildM()}
 function buildM(){const set=mSets[mRound];prog($('#mprog'),2,mRound);mSel=null;$('#lines').innerHTML='';
   const L=$('#mL'),Rr=$('#mR');L.innerHTML='';Rr.innerHTML='';let done=0;
   set.forEach(w=>{const b=document.createElement('button');b.className='pic';b.innerHTML=`<img src="img/${w.img}.png" alt="">`;b.dataset.k=w.k;
     b.onclick=()=>{$$('#mL .pic').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');mSel=b;play('W_'+w.k)};L.append(b)});
-  shuffle(set).forEach(w=>{const b=document.createElement('button');b.className='word';b.textContent=w.t;b.dataset.k=w.k;
+  shuffle(set).forEach(w=>{const b=document.createElement('button');if(HARD){b.className='word';b.textContent=w.t}else{b.className='word pic';b.innerHTML=`<img src="img/${w.img}.png" alt="">`}b.dataset.k=w.k;
     b.onclick=async()=>{if(!mSel){play('W_'+w.k);toast('先點一張圖！');return}
       if(mSel.dataset.k===w.k){const p=mSel;mSel=null;p.classList.remove('sel');p.classList.add('done');b.classList.add('done');sfx('ok');addStar();line(p,b);done++;
-        await play('W_'+w.k);if(done===4){mRound++;mRound<2?setTimeout(buildM,500):finish(3,'Match It ✔')}}
+        await play('W_'+w.k);if(done===set.length){mRound++;mRound<2?setTimeout(buildM,500):finish(3,'Match It ✔')}}
       else{b.classList.add('no');sfx('no');setTimeout(()=>b.classList.remove('no'),450)}};Rr.append(b)})}
 function line(a,b){const box=$('#matchBox').getBoundingClientRect(),A=a.getBoundingClientRect(),B=b.getBoundingClientRect();
   const x1=A.right-box.left,y1=A.top+A.height/2-box.top,x2=B.left-box.left,y2=B.top+B.height/2-box.top;
@@ -397,13 +411,13 @@ function line(a,b){const box=$('#matchBox').getBoundingClientRect(),A=a.getBound
 
 /* MEMORY 翻翻樂 */
 let memOpen=[],memGot=0,memBusy=false;
-function startMem(){const pick=shuffle(WORDS).slice(0,6);const cards=shuffle(pick.flatMap(w=>[{w,face:'pic'},{w,face:'word'}]));
+function startMem(){const pick=shuffle(QW).slice(0,MEMPAIR);const cards=shuffle(pick.flatMap(w=>[{w,face:'pic'},{w,face:HARD?'word':'pic'}]));$('#memGrid').classList.toggle('mem8',!HARD);
   const g=$('#memGrid');g.innerHTML='';memOpen=[];memGot=0;memBusy=false;
   cards.forEach(c=>{const b=document.createElement('button');b.className='mc';b.dataset.k=c.w.k;
     b.innerHTML=`<div class="in"><div class="ba"></div><div class="fa">${c.face==='pic'?`<img src="img/${c.w.img}.png" alt="">`:c.w.t}</div></div>`;
     b.onclick=()=>{if(memBusy||b.classList.contains('flip'))return;b.classList.add('flip');play('W_'+c.w.k);memOpen.push(b);
       if(memOpen.length===2){memBusy=true;const [x,y]=memOpen;
-        if(x.dataset.k===y.dataset.k){setTimeout(()=>{x.classList.add('got');y.classList.add('got');sfx('ok');addStar();memOpen=[];memBusy=false;memGot++;if(memGot===6)setTimeout(()=>finish(4,'Memory ✔'),700)},350)}
+        if(x.dataset.k===y.dataset.k){setTimeout(()=>{x.classList.add('got');y.classList.add('got');sfx('ok');addStar();memOpen=[];memBusy=false;memGot++;if(memGot===MEMPAIR)setTimeout(()=>finish(4,'Memory ✔'),700)},350)}
         else{setTimeout(()=>{sfx('no');x.classList.remove('flip');y.classList.remove('flip');memOpen=[];memBusy=false},1100)}}};
     g.append(b)});
   show('s-mem')}
