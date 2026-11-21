@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Suitcase Word Bank</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+@page{size:A4 landscape;margin:8mm}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Baloo 2","PingFang TC",sans-serif;color:#3a2a1a;background:#fff}
+.bar{display:flex;gap:10px;justify-content:center;padding:10px;background:#fff8ec}
+.bar button{font:inherit;font-weight:800;font-size:18px;border:0;border-radius:99px;padding:6px 20px;background:#ff7aa8;color:#fff;cursor:pointer}
+.bar button.alt{background:#f3e2c4;color:#3a2a1a}
+.sheet{width:281mm;height:194mm;margin:0 auto;display:flex;flex-direction:column;gap:2.5mm;padding:1mm}
+.head{display:flex;align-items:center;gap:4mm}
+.head h1{margin:0;font-size:9mm;line-height:1;flex:1}
+.head h1 small{font-size:4.2mm;font-weight:600;opacity:.75;margin-left:3mm}
+.head img{height:15mm}
+.name{font-size:4.2mm;font-weight:600}
+.cols{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:2.5mm;min-height:0}
+.col{border-radius:4mm;padding:2mm;display:flex;flex-direction:column;gap:1.2mm;border:.6mm solid rgba(0,0,0,.08)}
+.spring{background:#ffe3ee}.summer{background:#fff1c9}.autumn{background:#ffe0c7}.winter{background:#e0f0ff}
+.col h2{margin:0;display:flex;align-items:center;gap:2mm;font-size:7mm;line-height:1}
+.col h2 img{height:11mm;width:17mm;object-fit:cover;border-radius:2mm}
+.lab{font-size:3.4mm;font-weight:800;opacity:.7;margin-top:.5mm}
+.g{display:grid;gap:1.2mm}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+.c{background:#fff;border-radius:2.5mm;display:flex;flex-direction:column;align-items:center;padding:.8mm .5mm}
+.c img{width:76%;aspect-ratio:1;object-fit:contain}
+.c span{font-weight:800;font-size:3.5mm;line-height:1.05;text-align:center}
+.g2 .c img{width:52%}
+.frames{display:grid;grid-template-columns:1fr 1fr;gap:1mm 6mm;background:#fff8ec;border-radius:4mm;padding:2mm 4mm;font-size:4.4mm;font-weight:800}
+.frames i{font-style:normal;color:#e8382f}
+.frames .lv{grid-column:1/3;font-size:3.4mm;font-weight:600;opacity:.75}
+.foot{font-size:3mm;opacity:.6;text-align:right}
+@media print{.bar{display:none}.sheet{margin:0}}
+@media screen{.sheet{box-shadow:0 2px 12px rgba(0,0,0,.15);margin:14px auto;background:#fff}}
+</style>
+</head>
+<body>
+<div class="bar"><button onclick="print()">🖨 Print 列印</button><button class="alt" onclick="location.href='./'">← Back 回遊戲</button></div>
+<div class="sheet">
+  <div class="head"><img src="img/leo_cheer.png" alt=""><h1>My Suitcase Word Bank<small>四季行李圖卡表 · Leo's Suitcase</small></h1><div class="name">Name: ________________</div><img src="img/w_suitcase.png" alt=""><img src="img/nina_wave.png" alt=""></div>
+  <div class="cols" id="cols"></div>
+  <div class="frames">
+    <div>① I like <i>______</i>. <small>(season)</small></div>
+    <div>② It's <i>______</i>. <small>(warm / hot / cool / cold)</small></div>
+    <div>③ I can <i>______________</i>.</div>
+    <div>④ I pack my <i>________</i> and my <i>________</i>.</div>
+    <div class="lv">Level 2：寫 ①＋④　｜　Level 3：寫 ①②③④　｜　挑戰：④ 後面加 because it's ___.</div>
+  </div>
+  <div class="foot">Our Reading Space · Where Is Japan? (2) Leo's Suitcase</div>
+</div>
+<script>
+const SEA=[
+ {k:'spring',t:'Spring',sc:'sc_spring.jpg',wx:'warm',doK:[['cherry','see cherry blossoms'],['picnic','have a picnic']],items:[['umbrella','umbrella'],['raincoat','raincoat'],['basket','picnic basket'],['kite','kite'],['camera','camera'],['sneakers','sneakers']]},
+ {k:'summer',t:'Summer',sc:'sc_summer.jpg',wx:'hot',doK:[['swim','swim'],['fireworks','watch fireworks']],items:[['swimring','swim ring'],['shirt','summer shirt'],['sunhat','sun hat'],['sunglasses','sunglasses'],['fan','fan'],['sandals','sandals']]},
+ {k:'autumn',t:'Autumn',sc:'sc_autumn.jpg',wx:'cool',doK:[['leaves','see red and yellow leaves'],['hiking','go hiking']],items:[['jacket','jacket'],['sweater','sweater'],['backpack','backpack'],['bottle','water bottle'],['camera','camera'],['sneakers','sneakers']]},
+ {k:'winter',t:'Winter',sc:'sc_winter.jpg',wx:'cold',doK:[['ski','ski'],['snowman','make a snowman']],items:[['coat','coat'],['skis','skis'],['scarf','scarf'],['gloves','gloves'],['boots','boots'],['winterhat','winter hat']]}];
+const c=(img,t)=>`<div class="c"><img src="img/${img}" alt=""><span>${t}</span></div>`;
+document.getElementById('cols').innerHTML=SEA.map(x=>`<div class="col ${x.k}">
+ <h2><img src="img/${x.sc}" alt="">${x.t}</h2>
+ <div class="lab">It's…</div><div class="g g2">${c('wx_'+x.wx+'.png',x.wx)}<div class="c" style="justify-content:center"><span style="font-size:4.2mm">${x.t} is ${x.wx}.</span></div></div>
+ <div class="lab">I can…</div><div class="g g2">${x.doK.map(([k,t])=>c('a_'+k+'.png',t)).join('')}</div>
+ <div class="lab">I pack my…</div><div class="g g3">${x.items.map(([k,t])=>c('i_'+k+'.png',t)).join('')}</div></div>`).join('');
+if(location.search.includes('poster')){const st=document.createElement('style');st.textContent='@page{size:A3 landscape;margin:10mm} .sheet{zoom:1.41}';document.head.append(st);document.title='My Suitcase Word Bank Poster'}
+</script>
+</body>
+</html>

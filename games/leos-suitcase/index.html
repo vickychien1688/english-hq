@@ -446,10 +446,17 @@ function startIslands(){steps($('#st3b'),3);const box=$('#isChoices');box.innerH
   $('#isSpk').onclick=()=>play('I_islands');show('s-1i');play('I_islands')}
 // step 4 listen & choose (4 listen) + read & choose (4 read)
 let qs=[],qi=0;
-function start1q(){steps($('#st4'),4);const pick=shuffle(W1.filter(w=>w.k!=='country')).slice(0,8);qs=pick.map((w,i)=>({w,mode:i<4?'listen':'read'}));qi=0;show('s-1q');ask()}
+function start1q(){steps($('#st4'),4);const pick=shuffle(W1.filter(w=>!['country','honshu','hokkaido'].includes(w.k)));const parts=shuffle(['honshu','hokkaido','tokyo']).map(k=>({w:W1.find(x=>x.k===k),mode:'part'}));
+  qs=[...pick.slice(0,4).map(w=>({w,mode:'listen'})),...pick.slice(4,7).map(w=>({w,mode:'read'})),...parts];qi=0;show('s-1q');ask()}
 function ask(){const {w,mode}=qs[qi];prog($('#qprog'),qs.length,qi);const h=$('#qHead');h.innerHTML='';
   if(mode==='listen'){h.innerHTML='<button class="spk" id="qSpk">🔊</button><p class="big">Listen and choose!</p>';$('#qSpk').onclick=()=>play('W_'+w.k)}
+  else if(mode==='part'){h.innerHTML=`<button class="spk" id="qSpk">🔊</button><p class="big">Which part of Japan? <span style="color:var(--red)">${w.t}</span></p>`;$('#qSpk').onclick=()=>play('W_'+w.k)}
   else h.innerHTML=`<p class="sub">Read and choose! 讀一讀，選圖</p><p class="wordq">${w.t}</p>`;
+  if(mode==='part'){const MAPI={honshu:'w_honshu',hokkaido:'w_hokkaido',tokyo:'w_capital'};const g=$('#qGrid');g.innerHTML='';g.className='grid g3';let locked=false;
+    shuffle(['honshu','hokkaido','tokyo']).forEach(k=>{const b=card(MAPI[k],'');b.onclick=async()=>{if(locked)return;
+      if(k===w.k){locked=true;b.classList.add('ok');good();$('#qHead').insertAdjacentHTML('beforeend',`<p class="subtitle" style="width:100%">${w.txt}</p>`);await play('W_'+w.k,w.line);qi++;qi<qs.length?setTimeout(ask,300):start1s()}
+      else{b.classList.add('no','dim');bad();setTimeout(()=>play('W_'+w.k),400)}};g.append(b)});
+    setTimeout(()=>play('W_'+w.k),300);return}
   const JP=['japan','country','capital','honshu','hokkaido'];const pool=shuffle(W1.filter(x=>x!==w&&x.line!==w.line&&x.k!=='country'));const ds=[];for(const x of pool){if(ds.length===2)break;if(JP.includes(x.k)&&(JP.includes(w.k)||ds.some(d=>JP.includes(d.k))))continue;ds.push(x)}const opts=shuffle([w,...ds]);const g=$('#qGrid');g.innerHTML='';let locked=false,miss=0;
   opts.forEach(o=>{const b=card(o.img,'');b.onclick=async()=>{if(locked)return;
     if(o===w){locked=true;b.classList.add('ok');good();await play('W_'+w.k);qi++;qi<qs.length?setTimeout(ask,300):start1s()}
@@ -471,7 +478,138 @@ function done1(){clearSt(1);confetti();addStar(3);$('#doneTitle').textContent='S
     const b=document.createElement('button');b.className='say';b.innerHTML=`<img src="img/${i}.png" alt="" style="border-radius:0;object-fit:contain;background:#fff"><span>🔊 ${t}</span>`;b.onclick=()=>play(a);L.append(b)});
   show('s-done');play('I_great')}
 $('#doneBtn').onclick=()=>{show('s-home');refresh()};
-/*STUBS*/['start2','start3','start4','start5'].forEach(f=>{if(typeof window[f]!=='function')window[f]=()=>toast('Coming soon! 製作中')});
+
+/* ===================== STATIONS 2-5 ===================== */
+const SEA=[
+ {k:'spring',t:'spring',sc:'sc_spring.jpg',kp:'k_spring.jpg',wx:'warm',ask:'L13',leo:'L14',react:'L18',wrong:'l_skis.jpg',wS:'S_springwarm',act:{k:'cherry',line:'L19',txt:'In spring, we can see <b>cherry blossoms</b>.'},right:['basket','umbrella'],clue:'S_clue_spring',pack:'S_pack_spring',packT:'In spring, it\'s warm. Leo should pack a <b>picnic basket</b> and an <b>umbrella</b>.',doK:['cherry','picnic'],items:['umbrella','raincoat','basket','kite','camera','sneakers']},
+ {k:'summer',t:'summer',sc:'sc_summer.jpg',kp:'k_summer.jpg',wx:'hot',ask:'L25',leo:'L26',react:'L27',wrong:'l_bigcoat.jpg',wS:'L24',act:{k:'fireworks',line:'L28',txt:'In summer, we can watch <b>fireworks</b>.'},right:['swimring','shirt'],clue:'S_clue_summer',pack:'S_pack_summer',packT:'In summer, it\'s hot. Leo should pack a <b>swim ring</b> and a <b>summer shirt</b>.',doK:['swim','fireworks'],items:['swimring','shirt','sunhat','sunglasses','fan','sandals']},
+ {k:'autumn',t:'autumn',sc:'sc_autumn.jpg',kp:'k_autumn.jpg',wx:'cool',ask:'L32',leo:'L33',react:'L34',wrong:'l_swimring.jpg',wS:'S_autumncool',act:{k:'leaves',line:'L35',txt:'In autumn, we can see red and yellow <b>leaves</b>.'},right:['jacket','sweater'],clue:'S_clue_autumn',pack:'S_pack_autumn',packT:'In autumn, it\'s cool. Leo should pack a <b>jacket</b> and a <b>sweater</b>.',doK:['leaves','hiking'],items:['jacket','sweater','backpack','bottle','camera','sneakers']},
+ {k:'winter',t:'winter',sc:'sc_winter.jpg',kp:'k_winter.jpg',wx:'cold',ask:'L40',leo:'L41',react:'L42',wrong:'l_shirt.jpg',wS:'L39',act:{k:'ski',line:'L43',txt:'In winter, we can <b>ski</b>.'},right:['coat','skis'],clue:'S_clue_winter',pack:'S_pack_winter',packT:'In winter, it\'s cold. Leo should pack a <b>coat</b> and <b>skis</b>.',doK:['ski','snowman'],items:['coat','skis','scarf','gloves','boots','winterhat']}];
+const ITEM={umbrella:'umbrella',raincoat:'raincoat',basket:'picnic basket',kite:'kite',camera:'camera',sneakers:'sneakers',swimring:'swim ring',shirt:'summer shirt',sunhat:'sun hat',sunglasses:'sunglasses',fan:'fan',sandals:'sandals',jacket:'jacket',sweater:'sweater',backpack:'backpack',bottle:'water bottle',coat:'coat',skis:'skis',scarf:'scarf',gloves:'gloves',boots:'boots',winterhat:'winter hat'};
+const DO={cherry:'see cherry blossoms',picnic:'have a picnic',swim:'swim',fireworks:'watch fireworks',leaves:'see red and yellow leaves',hiking:'go hiking',ski:'ski',snowman:'make a snowman'};
+const WXS={warm:'S_springwarm',hot:'S_summerhot',cool:'S_autumncool',cold:'S_wintercold'};
+const MORE=['W_spring','W_summer','W_autumn','W_winter','W_warm','W_hot','W_cool','W_cold','W_cherry','W_fireworks','W_leaves','W_ski','W_flag','W_sun','W_picnic','W_swim','W_hiking','W_snowman',...Object.keys(ITEM).map(k=>'W_'+k),'S_springwarm','S_summerhot','S_autumncool','S_wintercold',...SEA.flatMap(x=>[x.clue,x.pack]),'I_order4','I_whatpack','I_okay','I_match','I_help','I_pick_season','I_pick_do','I_pick_two','I_sentence','I_flag','N_wrong',...SEA.map(x=>'B_like_'+x.k),...['warm','hot','cool','cold'].map(w=>'B_its_'+w),...Object.keys(DO).map(k=>'B_can_'+k),...Object.keys(ITEM).flatMap(k=>['B_pack_'+k,'B_and_'+k])];
+MORE.forEach(loadBuf);
+let ST=0;
+function gsteps(cur,n=5){$$('.gsteps').forEach(el=>steps2(el,cur,n))}
+function steps2(el,cur,n){el.innerHTML='';for(let i=1;i<=n;i++){const d=document.createElement('i');d.textContent=i;if(i<cur)d.className='f';if(i===cur)d.className='c';el.append(d)}}
+function itemImg(k){return 'i_'+k}
+function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+/* generic: intro */
+function gIntro(title,pics,says,clip,next){$('#giTitle').textContent=title;const P=$('#giPics');P.className='grid '+(pics.length>2?'g4':'g2');P.innerHTML='';
+  pics.forEach(([img,a])=>{const b=card(img,'','scene');b.onclick=()=>a&&play(a);P.append(b)});
+  const S=$('#giSays');S.innerHTML='';says.forEach(([who,a,t])=>{const b=document.createElement('button');b.className='say';b.innerHTML=`<img src="img/${who}_head.png" alt="" style="object-fit:contain"><span>${t}</span>`;b.onclick=()=>play(a);S.append(b)});
+  $('#giClip').onclick=()=>openVideo(clip[0],clip[1]);$('#giGo').onclick=next;show('g-intro');play(...says.map(x=>x[1]))}
+/* generic: learn */
+function gLearn(items,cols,next){const g=$('#glGrid');g.className='grid '+cols;g.innerHTML='';const heard=new Set();$('#glGo').classList.add('hide');$('#glSub').innerHTML='';
+  items.forEach(it=>{const b=card(it.img,it.t,it.scene?'scene':'');b.onclick=async()=>{b.classList.add('heard');heard.add(it.t);$('#glSub').innerHTML=it.txt||'';if(heard.size===items.length)$('#glGo').classList.remove('hide');await play(...it.a)};g.append(b)});
+  $('#glGo').onclick=next;show('g-learn');play('I_listen')}
+/* generic: pick (one right answer per round) */
+function gPick(rounds,next){let r=0;const run=()=>{const R=rounds[r];prog($('#gpProg'),rounds.length,r);$('#gpTitle').innerHTML=R.title||'';$('#gpSub').innerHTML='';
+  const pic=$('#gpPic');if(R.pic){pic.src='img/'+R.pic;pic.style.display=''}else pic.style.display='none';
+  const g=$('#gpGrid');g.className='grid '+(R.cols||'g4');g.innerHTML='';let locked=false,miss=0;
+  R.opts.forEach(o=>{const b=card(o.img,o.t||'',o.scene?'scene':'');if(o.ok)b.dataset.ok=1;b.onclick=async()=>{if(locked)return;
+    if(o.ok){locked=true;b.classList.add('ok');good();$('#gpSub').innerHTML=R.after||'';await play(...(R.okA||[]));if(R.then){await R.then()}r++;r<rounds.length?setTimeout(run,300):next()}
+    else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450);miss++;if(miss>=2){const c=g.querySelector('[data-ok]');c&&c.classList.add('hintc')}else if(R.ask)play(...R.ask)}};g.append(b)});
+  $('#gpSpk').onclick=()=>R.ask&&play(...R.ask);show('g-pick');R.ask&&setTimeout(()=>play(...R.ask),250)};run()}
+/* thumbs question inside pick screen */
+function thumbs(sayA,txt){return new Promise(res=>{const g=$('#gpGrid');g.className='thumbs';g.innerHTML='';$('#gpTitle').textContent='Is it OK?';
+  [['👍',false],['👎',true]].forEach(([e,ok])=>{const b=document.createElement('button');b.className='thumb';b.textContent=e;b.onclick=async()=>{if(!ok){b.classList.add('no');bad();play('I_try');return}
+    b.classList.add('ok');good();$('#gpSub').innerHTML=txt;toast('Oops, Leo! 😅');await play(...sayA);await wait(300);res()};g.append(b)});play('I_okay')})}
+/* generic: match left-right */
+function gMatch(pairs,next){const L=$('#gmL'),R=$('#gmR');L.innerHTML='';R.innerHTML='';let sel=null,done=0;
+  const mk=(side,p,i)=>{const b=document.createElement('button');b.className='mb';const v=side==='L'?p.L:p.R;b.innerHTML=(v.img?`<img class="${v.img.endsWith('.jpg')?'':'st'}" src="img/${v.img.includes('.')?v.img:v.img+'.png'}" alt="">`:'')+(v.t?`<span>${v.t}</span>`:'');b.dataset.i=i;b.dataset.side=side;
+    b.onclick=async()=>{if(side==='L'){$$('#gmL .mb').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b;v.a&&play(v.a);return}
+      if(!sel){toast('先點左邊！');return}
+      if(sel.dataset.i===b.dataset.i){sel.classList.remove('sel');sel.classList.add('done');b.classList.add('done');good();const a=p.a;sel=null;done++;await play(...a);if(done===pairs.length){await wait(300);next()}}
+      else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450)}};return b};
+  pairs.forEach((p,i)=>L.append(mk('L',p,i)));shuffle(pairs.map((p,i)=>[p,i])).forEach(([p,i])=>R.append(mk('R',p,i)));
+  $('#gmSpk').onclick=()=>play('I_match');show('g-match');play('I_match')}
+/* generic: sentence builder */
+function gSent(list,next){let si=0;const run=()=>{const S=list[si];prog($('#gsProg'),list.length,si);$('#gsPic').src='img/'+(S.img.includes('.')?S.img:S.img+'.png');$('#gsSpk').onclick=()=>play(S.line);
+  const box=$('#gsBox'),T=$('#gsTiles');box.innerHTML='';T.innerHTML='';let step=0,miss=0;
+  shuffle(S.words.map((w,i)=>({w,i}))).forEach(o=>{const b=document.createElement('button');b.className='tile';b.textContent=o.w;b.dataset.i=o.i;
+    b.onclick=async()=>{if(b.classList.contains('used'))return;
+      if(o.i===step){$$('#gsTiles .tile').forEach(x=>x.classList.remove('hintc'));miss=0;sfx('ok');b.classList.add('used');const sp=document.createElement('span');sp.className='placed';sp.textContent=o.w;box.append(sp);step++;
+        if(step===S.words.length){good();await play(S.line);si++;si<list.length?setTimeout(run,400):next()}}
+      else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450);miss++;if(miss>=2){const nx=$$('#gsTiles .tile').find(x=>+x.dataset.i===step);nx&&nx.classList.add('hintc')}}};T.append(b)});
+  show('g-sent');setTimeout(()=>play(S.line),250)};play('I_order').then(ok=>ok!==false&&run())}
+function finishSt(n,title,learned){clearSt(n);confetti();addStar(3);$('#doneTitle').textContent=title;const L=$('#learned');L.innerHTML='';
+  learned.forEach(([a,t,i])=>{const b=document.createElement('button');b.className='say';b.innerHTML=`<img src="img/${i.includes('.')?i:i+'.png'}" alt="" style="object-fit:contain;background:#fff;border-radius:10px">${''}<span>🔊 ${t}</span>`;b.onclick=()=>play(a);L.append(b)});
+  show('s-done');play('I_great')}
+
+/* ===== STATION 2 · Oops, Leo! ===== */
+function start2(){ST=2;gsteps(1);gIntro("Oops, Leo!",SEA.map(x=>[x.kp,x.leo]),[['nina','L25','What should Leo pack?'],['leo','L26','My big coat!']],[44,150],s2learn)}
+function s2learn(){gsteps(2);gLearn([
+  ...SEA.map(x=>({img:x.sc,scene:1,t:x.t,a:['W_'+x.k,x.wS],txt:{spring:'<b>Spring</b> is warm.',summer:'Now it\'s <b>summer</b>. Summer is hot.',autumn:'<b>Autumn</b> is cool.',winter:'<b>Winter</b> is cold.'}[x.k]})),
+  ...['warm','hot','cool','cold'].map(w=>({img:'wx_'+w,t:w,a:['W_'+w,WXS[w]],txt:{warm:'Spring is <b>warm</b>.',hot:'Summer is <b>hot</b>.',cool:'Autumn is <b>cool</b>.',cold:'Winter is <b>cold</b>.'}[w]}))],'g4',s2order)}
+function s2order(){gsteps(3);const g=$('#gpGrid');prog($('#gpProg'),0,0);$('#gpPic').style.display='none';$('#gpTitle').textContent='Spring → Summer → Autumn → Winter';$('#gpSub').innerHTML='';g.className='grid g4';g.innerHTML='';let step=0,miss=0;
+  shuffle(SEA).forEach(x=>{const b=card(x.sc,x.t,'scene');b.dataset.k=x.k;b.onclick=async()=>{if(b.classList.contains('ok'))return;
+    if(x===SEA[step]){$$('#gpGrid .card').forEach(c=>c.classList.remove('hintc'));b.classList.add('ok');sfx('ok');step++;miss=0;await play('W_'+x.k);if(step===4){good();await wait(300);s2what()}}
+    else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450);miss++;if(miss>=2){const nx=$$('#gpGrid .card').find(c=>c.dataset.k===SEA[step].k);nx&&nx.classList.add('hintc')}}};g.append(b)});
+  $('#gpSpk').onclick=()=>play('I_order4');show('g-pick');play('I_order4')}
+function s2what(){gsteps(4);const leoItems=SEA.map(x=>({img:x.wrong,scene:1,k:x.k}));
+  gPick(SEA.map(x=>({title:`It's ${x.t}! What did Leo pack?`,pic:x.sc,ask:[x.ask],cols:'g4',opts:shuffle(leoItems.map(o=>({...o,ok:o.k===x.k}))),okA:[x.leo,x.react],
+    then:()=>thumbs([x.wS],{spring:'Spring is warm. No snow! Skis? 👎',summer:'Summer is hot. A big coat? 👎',autumn:'Autumn is cool. No swimming! A swim ring? 👎',winter:'Winter is cold. A summer shirt? 👎'}[x.k])})),s2match)}
+function s2match(){gsteps(5);gMatch(SEA.map(x=>({L:{img:x.sc,a:'W_'+x.k},R:{img:'wx_'+x.wx,t:x.wx},a:[WXS[x.wx]]})),()=>finishSt(2,'Station 2 clear! 🧳',[
+  ['S_springwarm','Spring is warm.','wx_warm'],['S_summerhot','Summer is hot.','wx_hot'],['S_autumncool','Autumn is cool.','wx_cool'],['S_wintercold','Winter is cold.','wx_cold']]))}
+
+/* ===== STATION 3 · Japan's Four Seasons ===== */
+function start3(){ST=3;gsteps(1);gIntro("Japan's Four Seasons",SEA.map(x=>[x.sc,x.act.line]),[['obaa','L15','Konnichiwa! Welcome to Japan!'],['leo','L16','Konnichiwa!']],[54,130],s3learn)}
+function s3learn(){gsteps(2);gLearn([
+  ...SEA.map(x=>({img:'a_'+x.act.k,t:x.act.k==='cherry'?'cherry blossoms':x.act.k,a:['W_'+x.act.k,x.act.line],txt:x.act.txt})),
+  {img:'w_flag',t:'flag',a:['W_flag','L21'],txt:"That's Japan's <b>flag</b>."},{img:'a_sun',t:'sun',a:['W_sun','L23'],txt:'The red circle is the <b>sun</b>.'},
+  {img:'nina_wave',t:'Konnichiwa',a:['L16'],txt:'<b>Konnichiwa</b> = Hello'},{img:'a_fireworks',t:'Hanabi',a:['L29'],txt:'<b>Hanabi</b> = fireworks'}],'g4',s3listen)}
+function s3listen(){gsteps(3);const acts=SEA.map(x=>({img:'a_'+x.act.k,k:x.k}));
+  gPick(shuffle(SEA).map(x=>({title:'Listen and choose!',ask:[x.act.line],cols:'g4',opts:shuffle(acts.map(o=>({...o,ok:o.k===x.k}))),after:x.act.txt,okA:['W_'+x.act.k]})),s3match)}
+function s3match(){gsteps(4);gMatch(SEA.map(x=>({L:{img:x.sc,a:'W_'+x.k},R:{img:'a_'+x.act.k,t:x.act.k==='cherry'?'cherry blossoms':x.act.k},a:[x.act.line]})),s3flag)}
+function s3flag(){gsteps(5);$('#gfSub').innerHTML='';const sun=$('#flagSun');sun.classList.remove('hintc');let miss=0,done=false;
+  $('#gfSpk').onclick=()=>play('L21','L22','I_flag');$('#flagBox').onclick=e=>{if(done||e.target===sun)return;bad();miss++;if(miss>=2)sun.classList.add('hintc');play('I_flag')};
+  sun.onclick=async e=>{e.stopPropagation();if(done)return;done=true;sun.classList.remove('hintc');good();$('#gfSub').innerHTML='The red circle is the <b>sun</b>.';await play('L23');await wait(400);s3sent()};
+  show('g-flag');play('L21','L22','I_flag')}
+function s3sent(){gSent([{words:['In','summer,','we','can','watch','fireworks.'],line:'L28',img:'a_fireworks'},{words:['In','winter,','we','can','ski.'],line:'L43',img:'a_ski'}],
+  ()=>finishSt(3,'Station 3 clear! 🌸',SEA.map(x=>[x.act.line,x.act.txt.replace(/<\/?b>/g,''),'a_'+x.act.k])))}
+
+/* ===== STATION 4 · Help Leo Pack! ===== */
+const PACK8=['coat','skis','swimring','shirt','basket','umbrella','jacket','sweater'];
+function start4(){ST=4;gsteps(1);gIntro('Help Leo Pack!',[['x_coat.jpg','L44'],['k_winter.jpg','L46']],[['obaa','L44','Here, Leo. A warm coat and skis!'],['leo','L45','Thank you! Now I\'m ready!']],[148,160],s4learn)}
+function s4learn(){gsteps(2);gLearn(PACK8.map(k=>({img:itemImg(k),t:ITEM[k],a:['W_'+k]})),'g4',s4pack)}
+function s4pack(){gsteps(3);let r=0;const order=SEA;const run=()=>{const x=order[r];prog($('#pkProg'),4,r);$('#pkSeason').src='img/'+x.sc;$('#pkTitle').textContent=`It's ${x.t}!`;
+  $('#pkClue').innerHTML={spring:"It's warm. We can see cherry blossoms.",summer:"It's hot. We can swim.",autumn:"It's cool. We can see red and yellow leaves.",winter:"It's cold. We can ski."}[x.k];
+  const IN=$('#pkIn');IN.innerHTML='';const G=$('#pkItems');G.innerHTML='';let got=0,miss=0,locked=false;
+  shuffle(PACK8).forEach(k=>{const b=card(itemImg(k),ITEM[k]);if(x.right.includes(k))b.dataset.ok=1;b.onclick=async()=>{if(locked||b.classList.contains('dim'))return;
+    if(x.right.includes(k)){b.classList.add('dim');sfx('ok');cheer(true);addStar();const im=document.createElement('img');im.src=`img/${itemImg(k)}.png`;IN.append(im);got++;miss=0;await play('W_'+k);
+      if(got===2){locked=true;$('#pkClue').innerHTML=x.packT;await play(x.pack);await wait(400);r++;r<4?run():s4sent()}}
+    else{b.classList.add('no');bad();$('#pkCase').classList.add('shake');setTimeout(()=>{b.classList.remove('no');$('#pkCase').classList.remove('shake')},450);miss++;
+      if(miss>=2){G.querySelectorAll('[data-ok]').forEach(c=>!c.classList.contains('dim')&&c.classList.add('hintc'))}play('N_wrong')}};G.append(b)});
+  $('#pkSpk').onclick=()=>play(x.clue);show('g-pack');(r===0?play('I_help',x.clue):play(x.clue))};run()}
+function s4sent(){gsteps(4);gSent([{words:['Leo','should','pack','a','coat','and','skis.'],line:'S_pack_winter',img:'i_coat'},{words:['Leo','should','pack','a','jacket','and','a','sweater.'],line:'S_pack_autumn',img:'i_jacket'}],s4sum)}
+function s4sum(){gsteps(5);$('#gsumTitle').textContent="Japan's Four Seasons: What should we pack?";const G=$('#gsumGrid');G.innerHTML='';
+  SEA.forEach(x=>{const b=document.createElement('button');b.className='sumCard';b.innerHTML=`<img src="img/${x.sc}" alt=""><b>${x.t[0].toUpperCase()+x.t.slice(1)} · ${x.wx}</b><div class="ic"><img src="img/a_${x.act.k}.png" alt="">${x.right.map(k=>`<img src="img/${itemImg(k)}.png" alt="">`).join('')}</div><small>${x.packT.replace(/<\/?b>/g,'')}</small>`;b.onclick=()=>play(x.pack);G.append(b)});
+  $('#gsumGo').onclick=()=>finishSt(4,'Station 4 clear! ✈️',SEA.map(x=>[x.pack,x.packT.replace(/<\/?b>/g,''),itemImg(x.right[0])]));show('g-sum')}
+
+/* ===== STATION 5 · My Suitcase ===== */
+function buildChart(){const C=$('#chart');C.innerHTML='';
+  SEA.forEach(x=>{const col=document.createElement('div');col.className='col4 '+x.k;
+    col.innerHTML=`<h3>${x.t[0].toUpperCase()+x.t.slice(1)}</h3><div class="lab">It's…</div><div class="chips two"></div><div class="lab">I can…</div><div class="chips two"></div><div class="lab">I pack my…</div><div class="chips"></div>`;
+    const [w,d,i]=col.querySelectorAll('.chips');
+    const chip=(img,t,a)=>{const b=document.createElement('button');b.className='chip';b.innerHTML=`<img src="img/${img}" alt=""><span>${t}</span>`;b.onclick=()=>play(a);return b};
+    w.append(chip(x.sc,x.t,'W_'+x.k),chip(`wx_${x.wx}.png`,x.wx,'W_'+x.wx));
+    x.doK.forEach(k=>d.append(chip(`a_${k}.png`,DO[k],'B_can_'+k)));
+    x.items.forEach(k=>i.append(chip(`${itemImg(k)}.png`,ITEM[k],'W_'+k)));C.append(col)})}
+let mine={};
+function start5(){ST=5;buildChart();$('#chartGo').onclick=b5season;show('g-chart');play('I_listen')}
+function b5grid(title,a,opts,onPick,multi){$('#gbTitle').textContent=title;$('#gbSpk').onclick=()=>play(a);const g=$('#gbGrid');g.className='grid '+(opts.length>4?'g3':opts.length>2?'g4':'g2');g.innerHTML='';$('#gbCase').innerHTML='';const picked=[];
+  opts.forEach(o=>{const b=card(o.img,o.t,o.scene?'scene':'');b.onclick=async()=>{if(picked.includes(o)||b.classList.contains('dim'))return;picked.push(o);b.classList.add('ok');sfx('ok');await play(o.a);
+    if(!multi||picked.length===multi){await wait(250);onPick(multi?picked:o)}};g.append(b)});show('g-build');play(a)}
+function b5season(){gsteps(1,3);b5grid('Which season do you like?','I_pick_season',SEA.map(x=>({img:x.sc,scene:1,t:x.t,a:'B_like_'+x.k,x})),o=>{mine={x:o.x};b5do()})}
+function b5do(){gsteps(2,3);const x=mine.x;b5grid('What can you do?','I_pick_do',x.doK.map(k=>({img:'a_'+k,t:DO[k],a:'B_can_'+k,k})),o=>{mine.do=o.k;b5items()})}
+function b5items(){gsteps(3,3);const x=mine.x;b5grid('Pick two things!','I_pick_two',x.items.map(k=>({img:itemImg(k),t:ITEM[k],a:'W_'+k,k})),ps=>{mine.items=ps.map(p=>p.k);b5show()},2)}
+function b5audio(){const x=mine.x;return ['B_like_'+x.k,'B_its_'+x.wx,'B_can_'+mine.do,'B_pack_'+mine.items[0],'B_and_'+mine.items[1]]}
+function b5show(){const x=mine.x;$('#mineIn').innerHTML=mine.items.map(k=>`<img src="img/${itemImg(k)}.png" alt="">`).join('');
+  $('#mineText').innerHTML=`<div>① I like <u>${x.t}</u>.</div><div>② It's <u>${x.wx}</u>.</div><div>③ I can <u>${DO[mine.do]}</u>.</div><div>④ I pack my <u>${ITEM[mine.items[0]]}</u> and my <u>${ITEM[mine.items[1]]}</u>.</div>`;
+  $('#mineSpk').onclick=()=>play(...b5audio());$('#mineAgain').onclick=b5season;$('#mineDone').onclick=()=>finishSt(5,'You did it! Bye-bye! 👋',[[ 'B_like_'+x.k,`I like ${x.t}.`,x.sc],['B_pack_'+mine.items[0],`I pack my ${ITEM[mine.items[0]]} and my ${ITEM[mine.items[1]]}.`,itemImg(mine.items[0])]]);
+  show('g-mine');confetti();play(...b5audio())}
 </script>
 </body>
 </html>
