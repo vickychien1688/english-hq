@@ -192,6 +192,7 @@ main{flex:1;position:relative;overflow:hidden}
 .tfb.no{animation:shake .45s;opacity:.4}.tfb.ok{outline:6px solid var(--gold)}.tfb.hintc{animation:glow 1.2s infinite}
 .tfb.hide{display:none}
 .fixOpts{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+#learnGrid{width:min(92vw,88vh,900px)}
 #s-1w .post{width:min(80vw,52vh,700px)}
 .wordq.sm{font-size:clamp(34px,min(5vw,7vh),70px)}
 </style>
@@ -233,7 +234,7 @@ main{flex:1;position:relative;overflow:hidden}
   <section class="screen" id="s-1l">
     <div class="steps" id="st2"></div>
     <p class="big">Tap and listen!</p>
-    <div class="grid g5" id="learnGrid"></div>
+    <div class="grid g4" id="learnGrid"></div>
     <p class="subtitle" id="learnSub"></p>
     <button class="cta hide" id="learnGo">Next ▶</button>
   </section>
@@ -299,31 +300,29 @@ const VID='HmLhb-7ReIE', KEY='jtf5';
 const W1=[
  {k:'asia',t:'Asia',img:'w_asia',line:'L04',txt:'Japan is a country in <b>Asia</b>.'},
  {k:'island',t:'island',img:'w_island',line:'L11',txt:'Japan has many <b>islands</b>.'},
- {k:'hokkaido',t:'Hokkaido',img:'w_hokkaido',line:'L15',txt:'Four big islands are <b>Hokkaido</b>, Honshu, Shikoku, and Kyushu.'},
- {k:'honshu',t:'Honshu',img:'w_honshu',line:'L15',txt:'Four big islands are Hokkaido, <b>Honshu</b>, Shikoku, and Kyushu.'},
- {k:'shikoku',t:'Shikoku',img:'w_shikoku',line:'L15',txt:'Four big islands are Hokkaido, Honshu, <b>Shikoku</b>, and Kyushu.'},
- {k:'kyushu',t:'Kyushu',img:'w_kyushu',line:'L15',txt:'Four big islands are Hokkaido, Honshu, Shikoku, and <b>Kyushu</b>.'},
+ {k:'four',t:'four big islands',img:'w_japan',line:'L15',txt:'<b>Four big islands</b> are Hokkaido, Honshu, Shikoku, and Kyushu.'},
+ {k:'honshu',t:'Honshu',img:'w_honshu',line:'L16',txt:'Tokyo is on <b>Honshu</b>.'},
  {k:'tokyo',t:'Tokyo',img:'w_tokyo',line:'L16',txt:'<b>Tokyo</b> is on Honshu.'},
  {k:'capital',t:'capital',img:'w_capital',line:'L17',txt:'It is the <b>capital</b> of Japan.'},
  {k:'flag',t:'flag',img:'w_flag',line:'L19',txt:'Look! What color is the <b>flag</b>?'},
  {k:'sun',t:'sun',img:'a_sun',line:'L21',txt:'The red circle is the <b>sun</b>.'}];
-const ISL4=['hokkaido','honshu','shikoku','kyushu'];
+const HEAR=[{line:'L04',img:'w_asia'},{line:'L11',img:'w_island'},{line:'L17',img:'w_capital'},{line:'L19',img:'w_flag'},{line:'L21',img:'a_sun'}];
 /* True/False: bad = index of wrong word, opts = replacements (first is right), fix = audio of corrected sentence */
 const TF1=[
  {a:'T_1',w:['Japan','is','in','Asia.'],v:1,say:'L04',txt:'Japan is a country in <b>Asia</b>.'},
- {a:'T_3',w:['Tokyo','is','on','Kyushu.'],v:0,bad:3,opts:['Honshu.','Hokkaido.','Shikoku.'],say:'L16',txt:'<b>Tokyo</b> is on <b>Honshu</b>.'},
+ {a:'T_7',w:['The','flag','is','blue','and','white.'],v:0,bad:3,opts:['red','green','yellow'],say:'L20',txt:"It's <b>red</b> and white."},
  {a:'T_4',w:['Tokyo','is','the','capital','of','Japan.'],v:1,say:'L17',txt:'Tokyo is the <b>capital</b> of Japan.'},
  {a:'T_5',w:['The','red','circle','on','the','flag','is','the','moon.'],v:0,bad:8,opts:['sun.','star.','flower.'],say:'L21',txt:'The red circle is the <b>sun</b>.'},
  {a:'T_2',w:['Japan','has','125','islands.'],v:0,bad:2,opts:['14,125','4','1,412'],say:'L12',txt:'It has <b>14,125</b> islands!'},
- {a:'T_6',w:['Shikoku','is','one','of','the','four','big','islands.'],v:1,say:'L15',txt:'Four big islands are Hokkaido, Honshu, <b>Shikoku</b>, and Kyushu.'}];
+ {a:'T_8',w:['Japan','has','many','islands.'],v:1,say:'L11',txt:'Japan has many <b>islands</b>.'}];
 const SENT1=[
  {words:['Tokyo','is','the','capital','of','Japan.'],line:'T_4',img:'w_capital'},
- {words:['Four','big','islands','are','Hokkaido,','Honshu,','Shikoku,','and','Kyushu.'],line:'L15',img:'w_japan'},
+ {words:['Japan','is','a','country','in','Asia.'],line:'L04',img:'w_asia'},
  {words:['The','red','circle','is','the','sun.'],line:'L21',img:'w_flag'}];
 /* ---------- audio engine (decode once, instant taps) ---------- */
 const AC=new (window.AudioContext||window.webkitAudioContext)();
 const BUF={}; let curSrc=null, playToken=0;
-const ALL=[...Array(21)].map((_,i)=>'L'+String(i+1).padStart(2,'0')).concat(W1.map(w=>'W_'+w.k),['I_listen','I_asia','I_four','I_tokyo','I_islands','I_try','I_great','I_which','I_tf','I_fix','I_fix2','I_order','I_next','N_true','N_false'],TF1.map(t=>t.a));
+const ALL=[...Array(21)].map((_,i)=>'L'+String(i+1).padStart(2,'0')).concat(W1.map(w=>'W_'+w.k),['I_listen','I_asia','I_honshu','I_hear','I_tokyo','I_islands','I_try','I_great','I_tf','I_fix','I_fix2','I_order','I_next','N_true','N_false'],TF1.map(t=>t.a));
 async function loadBuf(id){if(id in BUF)return BUF[id];try{const ab=await (await fetch(`audio/${id}.mp3`)).arrayBuffer();BUF[id]=await new Promise((ok,no)=>AC.decodeAudioData(ab,ok,no))}catch(e){BUF[id]=null}return BUF[id]}
 ALL.forEach(loadBuf);
 function unlock(){try{if(AC.state!=='running'){AC.resume();const b=AC.createBuffer(1,1,22050),s=AC.createBufferSource();s.buffer=b;s.connect(AC.destination);s.start(0)}}catch(e){}}
@@ -392,7 +391,7 @@ const MAPS={};
 async function getMap(n){if(!MAPS[n])MAPS[n]=await (await fetch(`img/${n}.svg`)).text();return MAPS[n]}
 const JOURNEY=[
  {map:'world_map',targets:['asia'],title:'Where is Asia?',ask:'I_asia',say:['L04'],txt:'Japan is a country in <b>Asia</b>.',color:'#ffb357'},
- {map:'japan4_map',targets:ISL4.map(k=>'map-'+k),title:'North to south: tap the 4 big islands!',ask:'I_four',say:['L15'],txt:'Four big islands are <b>Hokkaido</b>, <b>Honshu</b>, <b>Shikoku</b>, and <b>Kyushu</b>.',colors:['#9fd0ff','#ffc83d','#ff8fb0','#ff7a5c'],words:ISL4},
+ {map:'japan4_map',targets:['map-honshu'],title:'Where is Honshu?',ask:'I_honshu',say:['W_honshu','L16'],txt:'<b>Tokyo</b> is on <b>Honshu</b>.',color:'#ffc83d'},
  {map:'japan4_map',targets:['tokyo'],title:'Where is Tokyo?',ask:'I_tokyo',say:['L16','L17'],txt:'<b>Tokyo</b> is on Honshu. It is the <b>capital</b> of Japan.'}];
 let ji=0,jt=0,jmiss=0,jlock=false,curMap='';
 function start1m(){steps($('#st3'),3);ji=0;curMap='';show('s-1m');jstep()}
@@ -411,25 +410,23 @@ $('#mapBox').addEventListener('click',async e=>{if(jlock||!$('#s-1m').classList.
   jlock=true;jmiss=0;$('#ring').classList.remove('on');good();const el=tEl();
   if(id==='tokyo'){const d=el.querySelector('#tokyoDot');d&&d.setAttribute('r','20')}
   else{const col=s.colors?s.colors[jt]:s.color;(el.tagName==='g'?[...el.querySelectorAll('path')]:[el]).forEach(p=>p.setAttribute('fill',col))}
-  if(s.words){$('#mapSub').innerHTML=ISL4.slice(0,jt+1).map(k=>W1.find(w=>w.k===k).t).join(' → ');await play('W_'+s.words[jt]);jt++;
-    if(jt<s.targets.length){jlock=false;return}}
   $('#mapSub').innerHTML=s.txt;await play(...s.say);await wait(500);
-  ji++;if(ji===2){startIslands();return}ji<JOURNEY.length?jstep():start1q()});
+  ji++;if(ji===1){startIslands();return}ji<JOURNEY.length?jstep():start1q()});
 function startIslands(){steps($('#st3b'),3);const box=$('#isChoices');box.innerHTML='';$('#isSub').innerHTML='';let locked=false,miss=0;
   shuffle(['4','125','1,412','14,125']).forEach(n=>{const b=document.createElement('button');b.className='choice';b.textContent=n;b.dataset.n=n;
     b.onclick=async()=>{if(locked)return;if(n==='14,125'){locked=true;b.classList.add('ok');good();$('#isSub').innerHTML='Japan has <b>14,125</b> islands!';await play('L12','L13','L14');show('s-1m');jstep()}
       else{b.classList.add('no');bad();miss++;if(miss>=2)box.querySelector('[data-n="14,125"]').classList.add('ok');play('I_try')}};box.append(b)});
   $('#isSpk').onclick=()=>play('I_islands');show('s-1i');play('I_islands')}
-// step 4a: which island? (4 map cards — this question IS about telling them apart)
+// step 4a: listen to the video line, choose the picture (4 options)
 let qs=[],qi=0;
-function start1q(){steps($('#st4'),4);qs=shuffle(ISL4);qi=0;show('s-1q');ask()}
-function ask(){const k=qs[qi],w=W1.find(x=>x.k===k);prog($('#qprog'),qs.length,qi);$('#qSub').innerHTML='';
-  $('#qHead').innerHTML=`<button class="spk" id="qSpk">🔊</button><p class="big">Which one is <span style="color:var(--red)">${w.t}</span>?</p>`;$('#qSpk').onclick=()=>play('W_'+k);
+function start1q(){steps($('#st4'),4);qs=shuffle(HEAR).slice(0,4);qi=0;show('s-1q');ask()}
+function ask(){const Q=qs[qi];prog($('#qprog'),qs.length,qi);$('#qSub').innerHTML='';
+  $('#qHead').innerHTML='<button class="spk" id="qSpk">🔊</button><p class="big">Listen and choose!</p>';$('#qSpk').onclick=()=>play(Q.line);
   const g=$('#qGrid');g.innerHTML='';let locked=false;
-  shuffle(ISL4).forEach(o=>{const b=card('w_'+o,'');b.onclick=async()=>{if(locked)return;
-    if(o===k){locked=true;b.classList.add('ok');good();$('#qSub').innerHTML=w.t;await play('W_'+k);qi++;qi<qs.length?setTimeout(ask,300):start1t()}
-    else{b.classList.add('no','dim');bad();setTimeout(()=>play('W_'+k),400)}};g.append(b)});
-  qi===0?play('I_which','W_'+k):setTimeout(()=>play('W_'+k),300)}
+  shuffle([Q,...shuffle(HEAR.filter(x=>x!==Q)).slice(0,3)]).forEach(o=>{const b=card(o.img,'');b.onclick=async()=>{if(locked)return;
+    if(o===Q){locked=true;b.classList.add('ok');good();$('#qSub').innerHTML=W1.find(w=>w.line===Q.line).txt;await play(Q.line);qi++;qi<qs.length?setTimeout(ask,300):start1t()}
+    else{b.classList.add('no','dim');bad();setTimeout(()=>play(Q.line),400)}};g.append(b)});
+  qi===0?play('I_hear',Q.line):setTimeout(()=>play(Q.line),300)}
 // step 4b: true or false (+ fix the wrong word)
 let ti=0,TFL=TF1,tfDone=null,tfStep=4;
 function startTF(list,stepN,next){TFL=list;tfDone=next;tfStep=stepN;ti=0;steps($('#stTf'),stepN);show('s-tf');play('I_tf').then(ok=>ok&&tfAsk(false))}
@@ -466,7 +463,7 @@ function sent(){const S=SENT1[si];prog($('#sprog'),SENT1.length,si);$('#sPic').s
       else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450);miss++;if(miss>=2){const nx=$$('#tiles .tile').find(x=>!x.classList.contains('used')&&x.textContent===want);nx&&nx.classList.add('hintc')}}};T.append(b)});
   setTimeout(()=>play(S.line),250)}
 function done1(){clearSt(1);confetti();addStar(3);$('#doneTitle').textContent='Station 1 clear! 🗾';const L=$('#learned');L.innerHTML='';
-  [['T_4','Tokyo is the capital of Japan.','w_capital'],['L15','Four big islands are Hokkaido, Honshu, Shikoku, and Kyushu.','w_japan'],['L21','The red circle is the sun.','w_flag']].forEach(([a,t,i])=>{
+  [['T_4','Tokyo is the capital of Japan.','w_capital'],['L04','Japan is a country in Asia.','w_asia'],['L21','The red circle is the sun.','w_flag']].forEach(([a,t,i])=>{
     const b=document.createElement('button');b.className='say';b.innerHTML=`<img src="img/${i}.png" alt="" style="border-radius:0;object-fit:contain;background:#fff"><span>🔊 ${t}</span>`;b.onclick=()=>play(a);L.append(b)});
   show('s-done');play('I_great')}
 $('#doneBtn').onclick=()=>{show('s-home');refresh()};
