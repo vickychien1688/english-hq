@@ -195,6 +195,51 @@ main{flex:1;position:relative;overflow:hidden}
 #learnGrid{width:min(92vw,88vh,900px)}
 #s-1w .post{width:min(80vw,52vh,700px)}
 .wordq.sm{font-size:clamp(34px,min(5vw,7vh),70px)}
+#s-gw .post{width:min(80vw,46vh,640px)}
+.spkI{font-size:clamp(28px,4vh,40px)}
+#learnGrid .card span{white-space:normal;text-align:center}
+.card.scene span{white-space:nowrap}
+#qText{display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);align-items:center}
+#qText:empty{display:none}
+.choice.long{font-size:clamp(20px,min(2.6vw,3.8vh),34px);padding:8px 26px;width:min(90vw,980px);text-align:left;line-height:1.2}
+.soQ{font-size:clamp(22px,min(3.2vw,4.6vh),42px);max-width:min(58vw,780px)}
+.qpic{border-radius:14px;max-width:30vw;object-fit:cover}
+#s-1q .row{flex-wrap:nowrap}
+.tfCard.hk{flex-direction:column;gap:2px;padding:10px 20px}
+.hl{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+#hkSeasons{width:min(90vw,80vh,760px)}
+#shCard .w,#hoCard .w{font-size:clamp(24px,min(3.6vw,5.2vh),48px);text-align:center}
+.w.slot{background:#fff4cf;border-radius:12px;padding:0 12px!important;color:var(--red)!important}
+.players{display:flex;gap:clamp(10px,2vw,28px);justify-content:center;flex-wrap:wrap}
+.players:empty{display:none}
+.pl{display:flex;align-items:center;gap:8px;background:#fff;border-radius:18px;padding:4px 14px 4px 4px;box-shadow:0 4px 0 #ead6b3;animation:pop .4s}
+.pl img{height:clamp(44px,7vh,70px)}.pl .you{font-size:clamp(30px,5vh,48px)}
+.pl b{font-size:clamp(18px,2.2vw,28px)}
+.pl i{font-style:normal;font-weight:800;color:#fff;border-radius:10px;padding:0 10px;font-size:clamp(16px,2vw,24px)}
+.pl i.t{background:var(--green)}.pl i.f{background:var(--red)}
+.pl.right::after{content:"✔";color:var(--green);font-size:30px;font-weight:800}
+.pl.wrong::after{content:"✘";color:var(--red);font-size:30px;font-weight:800}
+.whyBox{display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);align-items:center}
+.whyBox:empty{display:none}
+.scoreBig{font-size:clamp(40px,min(7vw,10vh),100px);color:var(--blue)}
+#hoThings{width:min(80vw,80vh,760px)}
+#hoSeasons .tile{text-transform:capitalize}
+.tile.sel{outline:5px solid var(--green)}
+#caOpts{width:min(92vw,100vh,1000px)}
+#caOpts .card span,#hoThings .card span{white-space:normal;text-align:center}
+#caOpts.g2{width:min(70vw,60vh,620px)}
+#caOpts.row{width:auto}
+#caLine:empty{display:none}
+.blank{font-size:clamp(24px,min(3.4vw,5vh),46px);font-weight:800;color:#c9b48f;letter-spacing:2px}
+.placed.fill{color:var(--red)}
+#caLine .placed{color:var(--ink)}#caLine .placed.fill{color:var(--red)}
+.mcPic{width:min(40vw,42vh,480px);border-radius:20px;box-shadow:0 6px 0 #ead6b3}
+#mcText{max-width:min(52vw,640px);background:#fff;border-radius:20px;padding:14px 22px;box-shadow:0 6px 0 #ead6b3}
+#mcText u{text-decoration:none;color:var(--red)}
+.cmp{position:absolute;display:none;background:#fff;border-radius:12px;padding:0 10px;font-weight:800;font-size:clamp(18px,2.4vw,30px);box-shadow:0 3px 0 #ead6b3;pointer-events:none}
+.mapbox.wave .cmp{display:block}
+.cmp.n{left:3%;top:3%}.cmp.s{left:3%;bottom:3%}
+.say{flex-shrink:1}
 </style>
 </head>
 <body>
@@ -213,7 +258,7 @@ main{flex:1;position:relative;overflow:hidden}
       <button class="stop" data-go="1"><div class="n">1</div><span class="done">✅</span><img src="img/w_capital.png" alt=""><b>Welcome to Tokyo!</b></button>
       <button class="stop locked" data-go="2"><div class="n">2</div><span class="done">✅</span><img src="img/a_cherry.png" alt=""><b>Four Seasons</b></button>
       <button class="stop locked" data-go="3"><div class="n">3</div><span class="done">✅</span><img src="img/magnifier.png" alt=""><b>Why Do They Love the Seasons?</b></button>
-      <button class="stop locked" data-go="4"><div class="n">4</div><span class="done">✅</span><img src="img/w_flag.png" alt=""><b>Japan: True or False!</b></button>
+      <button class="stop locked" data-go="4"><div class="n">4</div><span class="done">✅</span><img src="img/x_show.jpg" alt=""><b>Japan: True or False!</b></button>
       <button class="stop locked" data-go="5"><div class="n">5</div><span class="done">✅</span><img src="img/postcard.png" alt=""><b>My Season Card</b></button>
     </div>
     <button class="hbtn" id="soundTest">🔊 Sound check 測試聲音</button>
@@ -242,7 +287,7 @@ main{flex:1;position:relative;overflow:hidden}
   <section class="screen" id="s-1m">
     <div class="steps" id="st3"></div>
     <div class="row"><p class="big" id="mapTitle"></p><button class="spk" id="mapSpk">🔊</button></div>
-    <div class="mapbox" id="mapBox"><div id="mapSvg"></div><div class="ring" id="ring"></div></div>
+    <div class="mapbox" id="mapBox"><div id="mapSvg"></div><div class="cmp n">N ⬆</div><div class="cmp s">S ⬇</div><div class="ring" id="ring"></div></div>
     <p class="subtitle" id="mapSub"></p>
   </section>
   <section class="screen" id="s-1i">
@@ -258,6 +303,7 @@ main{flex:1;position:relative;overflow:hidden}
     <div class="progress" id="qprog"></div>
     <div class="row" id="qHead"></div>
     <div class="grid g4" id="qGrid"></div>
+    <div id="qText"></div>
     <p class="subtitle" id="qSub"></p>
   </section>
 
@@ -277,6 +323,62 @@ main{flex:1;position:relative;overflow:hidden}
     <div class="row"><img class="sentpic" id="sPic" src="" alt=""><button class="spk" id="sSpk">🔊</button></div>
     <div class="sent" id="sentBox"></div>
     <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section class="screen" id="s-gw">
+    <div class="steps" id="gwSt"></div>
+    <p class="big" id="gwTitle"></p>
+    <img class="post" id="gwPic" src="" alt="">
+    <div class="row" id="gwSay"></div>
+    <div class="row"><button class="watch" id="gwClip">▶ Watch 看這一段</button><button class="cta" id="gwGo">Next ▶</button></div>
+  </section>
+  <section class="screen" id="s-hk">
+    <div class="steps" id="hkSt"></div>
+    <div class="progress" id="hkProg"></div>
+    <div class="row"><p class="big" id="hkTitle"></p><button class="spk" id="hkSpk">🔊</button></div>
+    <div class="tfCard hk" id="hkCard"></div>
+    <div class="grid g4" id="hkSeasons"></div>
+    <p class="subtitle" id="hkSub"></p>
+  </section>
+  <section class="screen" id="s-show">
+    <div class="steps" id="shSt"></div>
+    <div class="progress" id="shProg"></div>
+    <div class="row"><p class="big" id="shTitle"></p><button class="spk" id="shSpk">🔊</button></div>
+    <div class="tfCard" id="shCard"></div>
+    <div class="tfBtns" id="shBtns"><button class="tfb t" data-v="1">✔ TRUE</button><button class="tfb f" data-v="0">✘ FALSE</button></div>
+    <div class="players" id="shPlayers"></div>
+    <div class="whyBox" id="shWhy"></div>
+  </section>
+  <section class="screen" id="s-score">
+    <div class="steps" id="scSt"></div>
+    <div class="heroRow"><img class="av" src="img/leo_cheer.png" alt=""><img class="case" src="img/obaa_head.png" alt=""><img class="av" src="img/nina_wave.png" alt=""></div>
+    <p class="big scoreBig">Leo 4 : 4 Nina</p>
+    <p class="sub">It's a tie! You are both winners!</p>
+    <p class="big" id="scYou"></p>
+    <div class="row"><button class="watch" id="scShow">▶ Watch the show 看節目</button><button class="cta" id="scGo">Bonus Round ▶</button></div>
+  </section>
+  <section class="screen" id="s-host">
+    <div class="steps" id="hoSt"></div>
+    <div class="progress" id="hoProg"></div>
+    <p class="big" id="hoTitle"></p>
+    <div class="tfCard" id="hoCard"></div>
+    <div class="grid g4" id="hoThings"></div>
+    <div class="row" id="hoSeasons"></div>
+    <button class="cta hide" id="hoAsk">Ask! 出題 ▶</button>
+    <div class="tfBtns" id="hoBtns"><button class="tfb t" data-v="1">✔ TRUE</button><button class="tfb f" data-v="0">✘ FALSE</button></div>
+    <p class="subtitle" id="hoSub"></p>
+  </section>
+  <section class="screen" id="s-card">
+    <div class="steps" id="caSt"></div>
+    <div class="row"><p class="big" id="caTitle"></p><button class="spk" id="caSpk">🔊</button></div>
+    <div class="sent" id="caLine"></div>
+    <div class="grid g4" id="caOpts"></div>
+    <p class="subtitle" id="caSub"></p>
+  </section>
+  <section class="screen" id="s-mycard">
+    <p class="big">My Season Card</p>
+    <div class="mineRow"><img class="mcPic" id="mcPic" src="" alt=""><div class="mineText" id="mcText"></div></div>
+    <div class="row"><button class="watch" id="mcRead">🔊 Read 念給我聽</button><button class="hbtn" id="mcAgain">↺ Make another 再做一張</button><button class="cta" id="mcDone">Done ▶</button></div>
   </section>
 
   <section class="screen" id="s-done">
@@ -356,6 +458,7 @@ function show(id){$$('.screen').forEach(s=>s.classList.toggle('on',s.id===id));b
 function steps(el,cur){const n=5;el.innerHTML='';for(let i=1;i<=n;i++){const d=document.createElement('i');d.textContent=i;if(i<cur)d.className='f';if(i===cur)d.className='c';el.append(d)}}
 function prog(el,n,f){el.innerHTML='';for(let i=0;i<n;i++){const d=document.createElement('i');if(i<f)d.className='f';el.append(d)}}
 function card(img,label,cls=''){const b=document.createElement('button');b.className='card '+cls;b.innerHTML=`<img src="img/${img.includes('.')?img:img+'.png'}" alt="">`+(label?`<span>${label}</span>`:'');return b}
+const im=n=>`img/${n.includes('.')?n:n+'.png'}`;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function confetti(){const c=$('#fx'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
   const P=[...Array(140)].map(()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,v:2+Math.random()*4,r:5+Math.random()*7,c:['#ff7aa8','#ffc83d','#3d7bd9','#3bb36b','#e8382f'][Math.random()*5|0],w:Math.random()*6}));
@@ -365,11 +468,11 @@ $('#vclose').onclick=()=>{$('#vslot').innerHTML='';$('#vbox').classList.remove('
 $('#watchAll').onclick=()=>openVideo();
 $('#soundTest').onclick=()=>play('I_great');
 /* home */
-const NSTA=1; // stations built so far
+const NSTA=5; // stations built so far
 function refresh(){$$('.stop').forEach(s=>{const n=+s.dataset.go;s.classList.toggle('cleared',cleared.includes(n));s.classList.toggle('locked',n>NSTA||(n>1&&!cleared.includes(n-1)))})}
 refresh();
 $$('.stop').forEach(s=>s.onclick=()=>{const n=+s.dataset.go;if(s.classList.contains('locked')){toast(n>NSTA?'Coming soon! 製作中':'先完成上一站！');return}
-  ({1:start1w})[n]()});
+  ({1:start1w,2:start2,3:start3,4:start4,5:start5})[n]()});
 let lp;$('header h1').addEventListener('pointerdown',()=>lp=setTimeout(()=>{cleared=[1,2,3,4,5];refresh();toast('老師模式：全部解鎖')},1500));
 ['pointerup','pointerleave'].forEach(e=>$('header h1').addEventListener(e,()=>clearTimeout(lp)));
 $('#homeBtn').onclick=()=>{stopAudio();show('s-home');refresh()};
@@ -379,13 +482,14 @@ function clearSt(n){if(!cleared.includes(n))cleared.push(n);try{localStorage.set
 function start1w(){steps($('#st1'),1);show('s-1w');play('L01','L02','L03')}
 $$('#s-1w .say').forEach(b=>b.onclick=()=>play(b.dataset.a));
 $('#clip1').onclick=()=>openVideo(0,77);
-$('#w1Go').onclick=start1l;
+$('#w1Go').onclick=()=>start1l();
 // learn
-function start1l(){steps($('#st2'),2);const g=$('#learnGrid');g.innerHTML='';const heard=new Set();$('#learnGo').classList.add('hide');$('#learnSub').innerHTML='';
-  W1.forEach(w=>{const b=card(w.img,w.t);b.onclick=async()=>{b.classList.add('heard');heard.add(w.k);
-    $('#learnSub').innerHTML=w.txt;if(heard.size===W1.length)$('#learnGo').classList.remove('hide');await play('W_'+w.k,w.line)};g.append(b)});
+let WL=W1,lNext=null;
+function start1l(list=W1,next=start1m,stepN=2){WL=list;lNext=next;steps($('#st2'),stepN);const g=$('#learnGrid');g.innerHTML='';const heard=new Set();$('#learnGo').classList.add('hide');$('#learnSub').innerHTML='';
+  WL.forEach(w=>{const b=card(w.img,w.t);b.onclick=async()=>{b.classList.add('heard');heard.add(w.k);
+    $('#learnSub').innerHTML=w.txt;if(heard.size===WL.length)$('#learnGo').classList.remove('hide');await play(w.wa||'W_'+w.k,w.line)};g.append(b)});
   show('s-1l');play('I_listen')}
-$('#learnGo').onclick=start1m;
+$('#learnGo').onclick=()=>lNext();
 // map journey: Asia -> 4 islands north to south -> Tokyo -> islands count
 const MAPS={};
 async function getMap(n){if(!MAPS[n])MAPS[n]=await (await fetch(`img/${n}.svg`)).text();return MAPS[n]}
@@ -394,24 +498,25 @@ const JOURNEY=[
  {map:'japan4_map',targets:['map-honshu'],title:'Where is Honshu?',ask:'I_honshu',say:['W_honshu','L16'],txt:'<b>Tokyo</b> is on <b>Honshu</b>.',color:'#ffc83d'},
  {map:'japan4_map',targets:['tokyo'],title:'Where is Tokyo?',ask:'I_tokyo',say:['L16','L17'],txt:'<b>Tokyo</b> is on Honshu. It is the <b>capital</b> of Japan.'}];
 let ji=0,jt=0,jmiss=0,jlock=false,curMap='';
-function start1m(){steps($('#st3'),3);ji=0;curMap='';show('s-1m');jstep()}
-async function jstep(){const s=JOURNEY[ji];jt=0;jmiss=0;jlock=false;$('#ring').classList.remove('on');$('#mapSub').innerHTML='';
+let JL=JOURNEY,jDone=null;
+function start1m(list=JOURNEY,next=start1q,stepN=3){JL=list;jDone=next;steps($('#st3'),stepN);ji=0;curMap='';$('#mapSvg').innerHTML='';$('#mapTitle').textContent='';$('#mapBox').classList.toggle('wave',list!==JOURNEY);show('s-1m');if(list!==JOURNEY)play('I_wave').then(ok=>ok&&jstep());else jstep()}
+async function jstep(){const s=JL[ji];jt=0;jmiss=0;jlock=false;$('#ring').classList.remove('on');$('#mapSub').innerHTML='';
   if(curMap!==s.map){$('#mapSvg').innerHTML=await getMap(s.map);curMap=s.map;const vb=$('#mapSvg svg').viewBox.baseVal;$('#mapBox').style.width=`min(94vw, calc((100dvh - 330px) * ${(vb.width/vb.height).toFixed(3)}), 1050px)`}
   $('#mapTitle').textContent=s.title;$('#mapSpk').onclick=()=>play(s.ask);play(s.ask)}
-function tEl(){return $('#mapSvg').querySelector('#'+JOURNEY[ji].targets[jt])}
+function tEl(){return $('#mapSvg').querySelector('#'+JL[ji].targets[jt])}
 function tRect(){const r=tEl().getBoundingClientRect(),b=$('#mapBox').getBoundingClientRect();return {x:r.left-b.left,y:r.top-b.top,w:r.width,h:r.height,bw:b.width,bh:b.height}}
-function hitTest(e,id){const s=JOURNEY[ji];if(s.targets[0]==='asia')return !!e.target.closest('#asia');
-  const el=e.target.closest('.hit');if(el)return el.id===id; // tapped exactly on some island
+function hitTest(e,id){const s=JL[ji];if(s.targets[0]==='asia')return !!e.target.closest('#asia');
+  const el=e.target.closest('.hit');if(el)return el.id===id||(s.alt||[]).includes(el.id); // tapped exactly on some island
   const r=tRect(),b=$('#mapBox').getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top,pad=Math.max(r.bw*.02,12);
   return x>r.x-pad&&x<r.x+r.w+pad&&y>r.y-pad&&y<r.y+r.h+pad&&id!=='map-honshu'}
-$('#mapBox').addEventListener('click',async e=>{if(jlock||!$('#s-1m').classList.contains('on'))return;const s=JOURNEY[ji],id=s.targets[jt];
+$('#mapBox').addEventListener('click',async e=>{if(jlock||!$('#s-1m').classList.contains('on'))return;const s=JL[ji],id=s.targets[jt];
   if(!hitTest(e,id)){bad();jmiss++;if(jmiss>=2){const r=tRect(),pad=14,R=$('#ring'),d=Math.max(r.w,r.h)+pad*2;R.style.width=R.style.height=d+'px';R.style.left=(r.x+r.w/2-d/2)+'px';R.style.top=(r.y+r.h/2-d/2)+'px';R.classList.add('on')}
     if(s.words&&jmiss<2)play('I_try');else if(s.words)play('W_'+s.words[jt]);else play('I_try');return}
   jlock=true;jmiss=0;$('#ring').classList.remove('on');good();const el=tEl();
   if(id==='tokyo'){const d=el.querySelector('#tokyoDot');d&&d.setAttribute('r','20')}
-  else{const col=s.colors?s.colors[jt]:s.color;(el.tagName==='g'?[...el.querySelectorAll('path')]:[el]).forEach(p=>p.setAttribute('fill',col))}
+  else{const col=s.colors?s.colors[jt]:s.color;(el.tagName==='g'?[...el.querySelectorAll('path')]:[el]).forEach(p=>p.setAttribute('fill',col));(s.alt||[]).forEach(a=>{const x=$('#mapSvg').querySelector('#'+a);x&&x.setAttribute('fill',col)})}
   $('#mapSub').innerHTML=s.txt;await play(...s.say);await wait(500);
-  ji++;if(ji===1){startIslands();return}ji<JOURNEY.length?jstep():start1q()});
+  ji++;if(ji===1&&JL===JOURNEY){startIslands();return}ji<JL.length?jstep():jDone()});
 function startIslands(){steps($('#st3b'),3);const box=$('#isChoices');box.innerHTML='';$('#isSub').innerHTML='';let locked=false,miss=0;
   shuffle(['4','125','1,412','14,125']).forEach(n=>{const b=document.createElement('button');b.className='choice';b.textContent=n;b.dataset.n=n;
     b.onclick=async()=>{if(locked)return;if(n==='14,125'){locked=true;b.classList.add('ok');good();$('#isSub').innerHTML='Japan has <b>14,125</b> islands!';await play('L12','L13','L14');show('s-1m');jstep()}
@@ -420,7 +525,7 @@ function startIslands(){steps($('#st3b'),3);const box=$('#isChoices');box.innerH
 // step 4a: listen to the video line, choose the picture (4 options)
 let qs=[],qi=0;
 function start1q(){steps($('#st4'),4);qs=shuffle(HEAR).slice(0,4);qi=0;show('s-1q');ask()}
-function ask(){const Q=qs[qi];prog($('#qprog'),qs.length,qi);$('#qSub').innerHTML='';
+function ask(){const Q=qs[qi];prog($('#qprog'),qs.length,qi);$('#qSub').innerHTML='';$('#qText').innerHTML='';$('#qGrid').style.display='';
   $('#qHead').innerHTML='<button class="spk" id="qSpk">🔊</button><p class="big">Listen and choose!</p>';$('#qSpk').onclick=()=>play(Q.line);
   const g=$('#qGrid');g.innerHTML='';let locked=false;
   shuffle([Q,...shuffle(HEAR.filter(x=>x!==Q)).slice(0,3)]).forEach(o=>{const b=card(o.img,'');b.onclick=async()=>{if(locked)return;
@@ -429,7 +534,7 @@ function ask(){const Q=qs[qi];prog($('#qprog'),qs.length,qi);$('#qSub').innerHTM
   qi===0?play('I_hear',Q.line):setTimeout(()=>play(Q.line),300)}
 // step 4b: true or false (+ fix the wrong word)
 let ti=0,TFL=TF1,tfDone=null,tfStep=4;
-function startTF(list,stepN,next){TFL=list;tfDone=next;tfStep=stepN;ti=0;steps($('#stTf'),stepN);show('s-tf');play('I_tf').then(ok=>ok&&tfAsk(false))}
+function startTF(list,stepN,next,introA='I_tf'){TFL=list;tfDone=next;tfStep=stepN;ti=0;steps($('#stTf'),stepN);show('s-tf');play(introA).then(ok=>ok&&tfAsk(false))}
 function start1t(){startTF(TF1,4,start1s)}
 function tfAsk(say=true){const T=TFL[ti];prog($('#tfProg'),TFL.length,ti);$('#tfTitle').textContent='True or false?';$('#tfSub').innerHTML='';$('#fixOpts').innerHTML='';
   const C=$('#tfCard');C.className='tfCard';C.innerHTML='';T.w.forEach((x,i)=>{const b=document.createElement('button');b.className='w';b.textContent=x;b.dataset.i=i;C.append(b)});
@@ -451,22 +556,207 @@ function tfPick(T,wrongEl){$('#tfTitle').textContent='Pick the right word!';cons
       else{b.classList.add('no');bad()}};O.append(b)})}
 function tfNext(){ti++;ti<TFL.length?tfAsk():tfDone()}
 // step 5 sentence builder
-let si=0;
-function start1s(){steps($('#st5'),5);si=0;show('s-1s');play('I_order').then(ok=>ok&&sent())}
-function sent(){const S=SENT1[si];prog($('#sprog'),SENT1.length,si);$('#sPic').src=`img/${S.img}.png`;$('#sSpk').onclick=()=>play(S.line);
+let si=0,SL=SENT1,sDone=null;
+function start1s(list=SENT1,next=done1){SL=list;sDone=next;steps($('#st5'),5);si=0;show('s-1s');play('I_order').then(ok=>ok&&sent())}
+function sent(){const S=SL[si];prog($('#sprog'),SL.length,si);$('#sPic').src=im(S.img);$('#sSpk').onclick=()=>play(S.line);
   const box=$('#sentBox'),T=$('#tiles');box.innerHTML='';T.innerHTML='';let step=0,miss=0;
   shuffle(S.words.map((w,i)=>({w,i}))).forEach(o=>{const b=document.createElement('button');b.className='tile';b.textContent=o.w;b.dataset.i=o.i;
     b.onclick=async()=>{if(b.classList.contains('used'))return;
       const want=S.words[step];
       if(o.w===want){$$('.tile').forEach(x=>x.classList.remove('hintc'));miss=0;sfx('ok');b.classList.add('used');const s=document.createElement('span');s.className='placed';s.textContent=o.w;box.append(s);step++;
-        if(step===S.words.length){good();await play(S.line);si++;si<SENT1.length?setTimeout(sent,400):done1()}}
+        if(step===S.words.length){good();await play(S.line);si++;si<SL.length?setTimeout(sent,400):sDone()}}
       else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450);miss++;if(miss>=2){const nx=$$('#tiles .tile').find(x=>!x.classList.contains('used')&&x.textContent===want);nx&&nx.classList.add('hintc')}}};T.append(b)});
   setTimeout(()=>play(S.line),250)}
-function done1(){clearSt(1);confetti();addStar(3);$('#doneTitle').textContent='Station 1 clear! 🗾';const L=$('#learned');L.innerHTML='';
-  [['T_4','Tokyo is the capital of Japan.','w_capital'],['L04','Japan is a country in Asia.','w_asia'],['L21','The red circle is the sun.','w_flag']].forEach(([a,t,i])=>{
-    const b=document.createElement('button');b.className='say';b.innerHTML=`<img src="img/${i}.png" alt="" style="border-radius:0;object-fit:contain;background:#fff"><span>🔊 ${t}</span>`;b.onclick=()=>play(a);L.append(b)});
+function doneSt(n,title,items){clearSt(n);confetti();addStar(3);$('#doneTitle').textContent=title;const L=$('#learned');L.innerHTML='';
+  items.forEach(([a,t,i])=>{const b=document.createElement('button');b.className='say';b.innerHTML=`<img src="${im(i)}" alt="" style="border-radius:10px;object-fit:contain;background:#fff"><span>🔊 ${t}</span>`;b.onclick=()=>play(...[].concat(a));L.append(b)});
   show('s-done');play('I_great')}
+function done1(){doneSt(1,'Station 1 clear! 🗾',[['T_4','Tokyo is the capital of Japan.','w_capital'],['L04','Japan is a country in Asia.','w_asia'],['L21','The red circle is the sun.','w_flag']])}
 $('#doneBtn').onclick=()=>{show('s-home');refresh()};
+/* ===== shared for stations 2-5 ===== */
+const SEA=['spring','summer','autumn','winter'];
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const seaCard=s=>card('sc_'+s+'.jpg',cap(s),'scene');
+function intro(title,pic,says,clip,next){steps($('#gwSt'),1);$('#gwTitle').textContent=title;$('#gwPic').src=im(pic);const r=$('#gwSay');r.innerHTML='';
+  says.forEach(([a,head,t])=>{const b=document.createElement('button');b.className='say';b.innerHTML=(head?`<img src="${im(head)}" alt="">`:'<b class="spkI">🔊</b>')+`<span>${t}</span>`;b.onclick=()=>play(a);r.append(b)});
+  $('#gwClip').onclick=()=>openVideo(clip[0],clip[1]);$('#gwGo').onclick=()=>next();show('s-gw');play(...says.map(x=>x[0]))}
+const MORE=['W_cherry','W_picnic','W_yukata','W_fireworks','W_hiking','W_leaves','W_skiing','W_south','W_north','W_spring','W_summer','W_autumn','W_winter','W_festival','W_sweets','W_lastlong','W_beauty','W_painting','W_haiku','W_seasonword','W_nature','W_tradition','W_snow',
+ 'I_season','I_wave','I_tapsouth','I_tapmid','I_tapnorth','I_so','I_haiku','I_which','I_show','I_why','I_bonus','I_host','I_hostq','I_card','I_block','I_mycard','H_1','H_2','H_3','H_4','T_b2','T_b4','T_b5','C4'];
+[...Array(58)].forEach((_,i)=>MORE.push('L'+String(i+22).padStart(2,'0')));
+/* ===== STATION 2 · Four Seasons ===== */
+const W2=[
+ {k:'cherry',t:'cherry blossoms',img:'a_cherry',line:'L24',txt:'In spring, people enjoy picnics under <b>cherry blossoms</b>.'},
+ {k:'picnic',t:'picnic',img:'a_picnic',line:'L24',txt:'In spring, people enjoy <b>picnics</b> under cherry blossoms.'},
+ {k:'yukata',t:'yukata',img:'x_yukata.jpg',line:'L26',txt:'In summer, they wear <b>yukata</b> and watch fireworks.'},
+ {k:'fireworks',t:'fireworks',img:'a_fireworks',line:'L26',txt:'In summer, they wear yukata and watch <b>fireworks</b>.'},
+ {k:'hanabi',t:'Hanabi',img:'x_hanabi.jpg',wa:'L27',line:'L28',txt:'<b>Hanabi</b>! It means "fire flowers."'},
+ {k:'hiking',t:'hiking',img:'a_hiking',line:'L29',txt:'In autumn, they go <b>hiking</b> to see colorful leaves.'},
+ {k:'leaves',t:'colorful leaves',img:'a_leaves',line:'L29',txt:'In autumn, they go hiking to see <b>colorful leaves</b>.'},
+ {k:'skiing',t:'skiing',img:'a_ski',line:'L30',txt:'In snowy areas, they go <b>skiing</b> in winter.'}];
+const SORT2=[
+ {img:'a_picnic',w:'W_picnic',ans:'spring',after:'L24',txt:'In <b>spring</b>, people enjoy picnics under cherry blossoms.'},
+ {img:'x_yukata.jpg',w:'W_yukata',ans:'summer',after:'L26',txt:'In <b>summer</b>, they wear yukata and watch fireworks.'},
+ {img:'a_leaves',w:'W_leaves',ans:'autumn',after:'L29',txt:'In <b>autumn</b>, they go hiking to see colorful leaves.'},
+ {img:'a_ski',w:'W_skiing',ans:'winter',after:'L30',txt:'In snowy areas, they go skiing in <b>winter</b>.'},
+ {img:'a_fireworks',w:'W_fireworks',ans:'summer',after:'L26',txt:'In <b>summer</b>, they wear yukata and watch fireworks.'},
+ {img:'a_cherry',w:'W_cherry',ans:'spring',after:'L24',txt:'In <b>spring</b>, people enjoy picnics under cherry blossoms.'}];
+const WAVE=[
+ {map:'japan4_map',targets:['map-kyushu'],alt:['map-shikoku'],title:'Tap the south!',ask:'I_tapsouth',say:['W_south'],txt:'Cherry blossoms start in the <b>south</b>.',color:'#ff8fbd'},
+ {map:'japan4_map',targets:['map-honshu'],title:'Now tap the middle!',ask:'I_tapmid',say:[],txt:'The pink wave moves north…',color:'#ffb0d0'},
+ {map:'japan4_map',targets:['map-hokkaido'],title:'Last, tap the north!',ask:'I_tapnorth',say:['W_north','L25'],txt:'Cherry blossoms start in the south and move <b>north</b>.',color:'#ffd0e2'}];
+const SENT2=[
+ {words:['In','summer,','they','wear','yukata','and','watch','fireworks.'],line:'L26',img:'a_fireworks'},
+ {words:['In','spring,','people','enjoy','picnics','under','cherry','blossoms.'],line:'L24',img:'a_picnic'},
+ {words:['In','autumn,','they','go','hiking','to','see','colorful','leaves.'],line:'L29',img:'a_hiking'}];
+let pq=[],pi=0,pNext=null;
+function startSort(){steps($('#st4'),3);pq=shuffle(SORT2);pi=0;pNext=()=>start1m(WAVE,()=>start1s(SENT2,done2),4);show('s-1q');play('I_season').then(ok=>ok&&askSort(false))}
+function askSort(say=true){const Q=pq[pi];prog($('#qprog'),pq.length,pi);$('#qSub').innerHTML='';$('#qText').innerHTML='';
+  $('#qHead').innerHTML=`<img class="sentpic qpic" src="${im(Q.img)}" alt=""><p class="big">Which season?</p><button class="spk" id="qSpk">🔊</button>`;$('#qSpk').onclick=()=>play(Q.w);
+  const g=$('#qGrid');g.innerHTML='';g.style.display='';let locked=false;
+  SEA.forEach(s=>{const b=seaCard(s);b.onclick=async()=>{if(locked)return;
+    if(s===Q.ans){locked=true;b.classList.add('ok');good();$('#qSub').innerHTML=Q.txt;await play('W_'+s,Q.after);pi++;pi<pq.length?setTimeout(askSort,300):pNext()}
+    else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450);play(Q.w)}};g.append(b)});
+  if(say)setTimeout(()=>play(Q.w),250);else play(Q.w)}
+function start2(){intro('Four Seasons','x_screen.jpg',[['L22',null,'Japan has four seasons.'],['L23',null,'Each season brings different weather and scenery.'],['L25',null,'Cherry blossoms start in the south and move north.']],[76,114],()=>start1l(W2,startSort,2))}
+function done2(){doneSt(2,'Station 2 clear! 🌸',[['L24','In spring, people enjoy picnics under cherry blossoms.','a_picnic'],['L26','In summer, they wear yukata and watch fireworks.','a_fireworks'],['L29','In autumn, they go hiking to see colorful leaves.','a_hiking'],['L30','In snowy areas, they go skiing in winter.','a_ski']])}
+/* ===== STATION 3 · Why Do They Love the Seasons? ===== */
+const W3=[
+ {k:'festival',t:'festival',img:'x_festival.jpg',line:'L32',txt:'Food, clothes, and <b>festivals</b> change with the seasons.'},
+ {k:'sweets',t:'sweets',img:'x_sweets.jpg',line:'L33',txt:'Even the <b>sweets</b> change!'},
+ {k:'lastlong',t:'last long',img:'a_cherry',line:'L35',txt:'Cherry blossoms and autumn colors do not <b>last long</b>.'},
+ {k:'beauty',t:'beauty',img:'x_beauty.jpg',line:'L36',txt:'So people enjoy their <b>beauty</b> now.'},
+ {k:'painting',t:'painting',img:'x_screen.jpg',line:'L39',txt:'So they keep it in poems, stories, and <b>paintings</b>.'},
+ {k:'haiku',t:'haiku',img:'x_haiku.jpg',line:'L40',txt:'A <b>haiku</b> is a short poem.'},
+ {k:'nature',t:'nature',img:'sc_autumn.jpg',line:'L43',txt:'These traditions show respect for <b>nature</b>.'},
+ {k:'tradition',t:'tradition',img:'x_family.jpg',line:'L45',txt:'Families keep these old <b>traditions</b> and pass them on to children.'}];
+const SO=[
+ {a:'L35',t:'Cherry blossoms and autumn colors do not last long.',img:'a_cherry',b:'L36',bt:'So people enjoy their beauty now.'},
+ {a:'L38',t:'People want to remember each season.',img:'x_screen.jpg',b:'L39',bt:'So they keep it in poems, stories, and paintings.'},
+ {a:'L32',t:'Food, clothes, and festivals change with the seasons.',img:'x_yukata.jpg',b:'L33',bt:'Even the sweets change!'},
+ {a:'L42',t:"At some festivals, people give thanks for nature's gifts.",img:'x_festival.jpg',b:'L43',bt:'These traditions show respect for nature.'}];
+const HK=[
+ {a:'H_1',lines:[['Cherry blossoms','fall.'],['I','eat','sweets','under','the','tree.'],['Pink','on','my','hat!']],key:'Cherry blossoms',s:'spring'},
+ {a:'H_2',lines:[['Boom!','Fireworks!'],['I','sit','with','my','grandma.'],['The','sky','is','so','bright!']],key:'Fireworks!',s:'summer'},
+ {a:'H_3',lines:[['Red','and','yellow','leaves.'],['I','walk','up','the','hill','with','Dad.'],['Crunch,','crunch,','crunch!']],key:'leaves.',s:'autumn'},
+ {a:'H_4',lines:[['Snow','on','the','roof.'],['My','cat','sleeps','by','the','fire.'],['Warm','and','round!']],key:'Snow',s:'winter'}];
+const SENT3=[
+ {words:['A','haiku','is','a','short','poem.'],line:'L40',img:'x_haiku.jpg'},
+ {words:['These','traditions','show','respect','for','nature.'],line:'L43',img:'x_festival.jpg'},
+ {words:['So','people','enjoy','their','beauty','now.'],line:'L36',img:'x_beauty.jpg'}];
+function start3(){intro('Why Do They Love the Seasons?','x_sweets.jpg',[['L31',null,'Why do people in Japan love the four seasons?'],['L33',null,'Even the sweets change!'],['L34','leo_head','They look like little flowers!']],[114,181],()=>start1l(W3,startSo,2))}
+function startSo(){steps($('#st4'),3);pq=shuffle(SO);pi=0;show('s-1q');play('I_so').then(ok=>ok&&askSo(false))}
+function askSo(say=true){const Q=pq[pi];prog($('#qprog'),pq.length,pi);$('#qSub').innerHTML='';const g=$('#qGrid');g.innerHTML='';g.style.display='none';
+  $('#qHead').innerHTML=`<img class="sentpic qpic" src="${im(Q.img)}" alt=""><p class="big soQ">${Q.t}</p><button class="spk" id="qSpk">🔊</button>`;$('#qSpk').onclick=()=>play(Q.a);
+  const T=$('#qText');T.innerHTML='';let locked=false;
+  shuffle([Q,...shuffle(SO.filter(x=>x!==Q)).slice(0,2)]).forEach(o=>{const b=document.createElement('button');b.className='choice long';b.textContent=o.bt;
+    b.onclick=async()=>{if(locked)return;if(o===Q){locked=true;b.classList.add('ok');good();await play(Q.a,Q.b);pi++;pi<pq.length?setTimeout(askSo,300):startHaiku()}
+      else{b.classList.add('no');bad();setTimeout(()=>play(Q.a),400)}};T.append(b)});
+  if(say)setTimeout(()=>play(Q.a),250);else play(Q.a)}
+let hi=0;
+function startHaiku(){steps($('#hkSt'),4);hi=0;show('s-hk');play('I_haiku').then(ok=>ok&&askHk(false))}
+function askHk(say=true){const H=HK[hi];prog($('#hkProg'),HK.length,hi);$('#hkTitle').textContent='Find the season word!';$('#hkSub').innerHTML='';
+  const C=$('#hkCard');C.className='tfCard fixing hk';C.innerHTML='';const S=$('#hkSeasons');S.innerHTML='';S.style.display='none';let miss=0,locked=false;$('#hkSpk').onclick=()=>play(H.a);
+  H.lines.forEach(l=>{const d=document.createElement('div');d.className='hl';l.forEach(x=>{const b=document.createElement('button');b.className='w';b.textContent=x;
+    b.onclick=async()=>{if(locked)return;
+      if(x===H.key){locked=true;sfx('ok');addStar();b.classList.add('fixed');C.classList.remove('fixing');$$('#hkCard .w').forEach(y=>y.classList.remove('hintc'));$('#hkSub').innerHTML=`<b>${x.replace(/[.!]/g,'')}</b> is the season word!`;await play('W_seasonword');askHkS(H)}
+      else{b.classList.add('no');setTimeout(()=>b.classList.remove('no'),450);bad();miss++;if(miss>=2)$$('#hkCard .w').find(y=>y.textContent===H.key).classList.add('hintc')}};d.append(b)});C.append(d)});
+  if(say)setTimeout(()=>play(H.a),250);else play(H.a)}
+function askHkS(H){$('#hkTitle').textContent='Which season is it?';const S=$('#hkSeasons');S.innerHTML='';S.style.display='';let locked=false;play('I_which');
+  SEA.forEach(s=>{const b=seaCard(s);b.onclick=async()=>{if(locked)return;
+    if(s===H.s){locked=true;b.classList.add('ok');good();await play('W_'+s);hi++;hi<HK.length?setTimeout(askHk,400):start1s(SENT3,done3)}
+    else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450)}};S.append(b)})}
+function done3(){doneSt(3,'Station 3 clear! 🍡',[['L36','So people enjoy their beauty now.','x_beauty.jpg'],['L39','So they keep it in poems, stories, and paintings.','x_screen.jpg'],['L40','A haiku is a short poem.','x_haiku.jpg'],['L43','These traditions show respect for nature.','x_festival.jpg']])}
+/* ===== STATION 4 · Japan: True or False! ===== */
+const WHY=[
+ {k:'fam',t:'Families keep these old traditions and pass them on to children.',a:'L45'},
+ {k:'sweets',t:'Food, clothes, and festivals change with the seasons. Even the sweets change!',a:['L32','L33']},
+ {k:'long',t:'Cherry blossoms and autumn colors do not last long.',a:'L35'},
+ {k:'south',t:'Cherry blossoms start in the south and move north.',a:'L25'},
+ {k:'haiku',t:'A haiku is a short poem. It often has a season word.',a:['L40','L41']}];
+const SHOW=[
+ {q:'L53',t:'In Japan, people still keep old traditions today.',v:1,leo:['L55',1],nina:['L56',1],host:'L57',why:'fam'},
+ {q:'L58',t:'In Japan, food and clothes change with the seasons.',v:1,leo:['L59',1],nina:['L60',1],host:'L61',why:'sweets'},
+ {q:'L62',t:'Cherry blossoms stay on the trees all year.',v:0,leo:['L63',1],nina:['L64',0],host:'L65',why:'long'},
+ {q:'L66',t:'Cherry blossoms start in the north and move south.',v:0,leo:['L67',0],nina:['L68',1],host:'L69',why:'south'},
+ {q:'L70',t:'People in Japan keep the seasons in poems and paintings.',v:1,leo:['L71',1],nina:['L72',1],host:'L73',why:'haiku'}];
+const TF4=[
+ {a:'L22',w:['Japan','has','four','seasons.'],v:1,say:'L22',txt:'Japan has <b>four seasons</b>.'},
+ {a:'T_b2',w:['Hanabi','means','"snow','flowers."'],v:0,bad:2,opts:['"fire','"rain','"sun'],say:'L28',txt:'It means "<b>fire</b> flowers."'},
+ {a:'L29',w:['In','autumn,','they','go','hiking','to','see','colorful','leaves.'],v:1,say:'L29',txt:'In autumn, they go hiking to see <b>colorful leaves</b>.'},
+ {a:'T_b4',w:['A','haiku','is','a','long','poem.'],v:0,bad:4,opts:['short','big','sad'],say:'L40',txt:'A haiku is a <b>short</b> poem.'},
+ {a:'T_b5',w:['In','winter,','they','wear','yukata','and','watch','fireworks.'],v:0,bad:1,opts:['summer,','spring,','autumn,'],say:'L26',txt:'In <b>summer</b>, they wear yukata and watch fireworks.'}];
+const THINGS=[{k:'cherry',t:'cherry blossoms',img:'a_cherry',s:'spring'},{k:'fireworks',t:'fireworks',img:'a_fireworks',s:'summer'},{k:'leaves',t:'colorful leaves',img:'a_leaves',s:'autumn'},{k:'snow',t:'snow',img:'a_snowman',s:'winter'}];
+const SENT4=[
+ {words:['Cherry','blossoms','start','in','the','south','and','move','north.'],line:'L25',img:'a_cherry'},
+ {words:['We','see','fireworks','in','summer.'],line:'P_fireworks_summer',img:'a_fireworks'},
+ {words:['Japan','has','four','seasons.'],line:'L22',img:'x_screen.jpg'}];
+THINGS.forEach(x=>SEA.forEach(s=>MORE.push(`P_${x.k}_${s}`)));
+function start4(){intro('Japan: True or False!','x_show.jpg',[['L48','obaa_head','The show is starting!'],['L49','obaa_head','Welcome to "Japan: True or False!"'],['L50','obaa_head','Our players today are Leo and Nina!']],[180,200],startShow)}
+let qn=0,you=0;
+function startShow(){steps($('#shSt'),2);qn=0;you=0;show('s-show');play('I_show').then(ok=>ok&&showQ(false))}
+function showQ(say=true){const Q=SHOW[qn];prog($('#shProg'),SHOW.length,qn);$('#shTitle').textContent=`Question ${qn+1}`;$('#shWhy').innerHTML='';$('#shPlayers').innerHTML='';
+  $('#shCard').innerHTML=`<span class="w">${Q.t}</span>`;$('#shBtns').style.display='';$$('#shBtns .tfb').forEach(b=>b.className='tfb '+(b.dataset.v==='1'?'t':'f'));$('#shSpk').onclick=()=>play(Q.q);let locked=false;
+  $$('#shBtns .tfb').forEach(b=>b.onclick=async()=>{if(locked)return;locked=true;const mine=+b.dataset.v,ok=mine===Q.v;if(ok){you++;good()}else bad();
+    $$('#shBtns .tfb').forEach(x=>{if(x!==b)x.classList.add('hide')});
+    const P=$('#shPlayers');const mk=(head,name,ans)=>{const d=document.createElement('div');d.className='pl';d.innerHTML=(head?`<img src="${im(head)}" alt="">`:'<span class="you">🙋</span>')+`<b>${name}</b><i class="${ans?'t':'f'}">${ans?'TRUE':'FALSE'}</i>`;P.append(d);return d};
+    const dy=mk(null,'You',mine);await wait(300);const dl=mk('leo_head','Leo',Q.leo[1]);await play(Q.leo[0]);const dn=mk('nina_head','Nina',Q.nina[1]);await play(Q.nina[0]);
+    [[dy,mine],[dl,Q.leo[1]],[dn,Q.nina[1]]].forEach(([d,a])=>d.classList.add(a===Q.v?'right':'wrong'));$('#shBtns').style.display='none';
+    $('#shTitle').textContent=Q.v?'TRUE!':'FALSE!';await play(Q.host);askWhy(Q)});
+  if(say)setTimeout(()=>play(Q.q),250);else play(Q.q)}
+function askWhy(Q){$('#shTitle').textContent='Why?';const W=$('#shWhy');W.innerHTML='';let locked=false;play('I_why');const R=WHY.find(w=>w.k===Q.why);
+  shuffle([R,...shuffle(WHY.filter(w=>w!==R)).slice(0,2)]).forEach(o=>{const b=document.createElement('button');b.className='choice long';b.textContent=o.t;
+    b.onclick=async()=>{if(locked)return;if(o===R){locked=true;b.classList.add('ok');good();await play(...[].concat(R.a));await wait(300);qn++;qn<SHOW.length?showQ():showScore()}
+      else{b.classList.add('no');bad()}};W.append(b)})}
+function showScore(){steps($('#scSt'),2);$('#scYou').textContent=`You: ${you} / 5`;show('s-score');if(you>=4)confetti();play('L74','L77')}
+$('#scShow').onclick=()=>openVideo(198,304);
+$('#scGo').onclick=()=>startTF(TF4,3,startHost,'I_bonus');
+let hoN=0;
+function startHost(){steps($('#hoSt'),4);hoN=0;show('s-host');play('I_host').then(ok=>ok&&hostQ())}
+function hostQ(){prog($('#hoProg'),3,hoN);let th=null,se=null,locked=false;$('#hoSub').innerHTML='';$('#hoTitle').textContent='Make a True or False question!';
+  const C=$('#hoCard');const draw=()=>{C.innerHTML=`<span class="w">We see</span><span class="w slot">${th?th.t:'___'}</span><span class="w">in</span><span class="w slot">${se?se+'.':'___ .'}</span>`};draw();
+  const G=$('#hoThings'),S=$('#hoSeasons'),A=$('#hoAsk'),B=$('#hoBtns');G.innerHTML='';S.innerHTML='';G.style.display=S.style.display='';A.classList.add('hide');B.style.display='none';
+  const ready=()=>{if(th&&se)A.classList.remove('hide')};
+  THINGS.forEach(x=>{const b=card(x.img,x.t);b.onclick=()=>{if(locked)return;th=x;$$('#hoThings .card').forEach(c=>c.classList.remove('heard'));b.classList.add('heard');draw();play('W_'+x.k);ready()};G.append(b)});
+  SEA.forEach(s=>{const b=document.createElement('button');b.className='tile';b.textContent=s;b.onclick=()=>{if(locked)return;se=s;$$('#hoSeasons .tile').forEach(c=>c.classList.remove('sel'));b.classList.add('sel');draw();play('W_'+s);ready()};S.append(b)});
+  A.onclick=async()=>{locked=true;A.classList.add('hide');G.style.display=S.style.display='none';$('#hoTitle').textContent='True or false?';B.style.display='';$$('#hoBtns .tfb').forEach(b=>b.className='tfb '+(b.dataset.v==='1'?'t':'f'));
+    const truth=th.s===se?1:0;let done=false;await play(`P_${th.k}_${se}`,'I_hostq');
+    $$('#hoBtns .tfb').forEach(b=>b.onclick=async()=>{if(done)return;
+      if(+b.dataset.v===truth){done=true;b.classList.add('ok');good();$('#hoSub').innerHTML=`We see <b>${th.t}</b> in <b>${th.s}</b>.`;await play(truth?'N_true':'N_false',`P_${th.k}_${th.s}`);await wait(400);hoN++;hoN<3?hostQ():start1s(SENT4,done4)}
+      else{b.classList.add('no');bad();$(`#hoBtns .tfb[data-v="${truth}"]`).classList.add('hintc');play(`P_${th.k}_${se}`)}})};
+  play('I_host')}
+function done4(){doneSt(4,'Quiz show star! 🏆',[['L53','In Japan, people still keep old traditions today.','x_family.jpg'],['L35','Cherry blossoms and autumn colors do not last long.','a_cherry'],['L25','Cherry blossoms start in the south and move north.','japan4_map.svg'],['L70','People in Japan keep the seasons in poems and paintings.','x_screen.jpg']])}
+/* ===== STATION 5 · My Season Card ===== */
+const CARD={
+ spring:{do:[['picnic','have picnics','a_picnic'],['cherry','see cherry blossoms','a_cherry']],why:[['warm',"it's warm",'wx_warm'],['flowers','the flowers are pretty','a_cherry']]},
+ summer:{do:[['yukata','wear yukata','x_yukata.jpg'],['fireworks','watch fireworks','a_fireworks']],why:[['hot',"it's hot",'wx_hot'],['fireworks','the fireworks are beautiful','a_fireworks']]},
+ autumn:{do:[['hiking','go hiking','a_hiking'],['leaves','see colorful leaves','a_leaves']],why:[['cool',"it's cool",'wx_cool'],['leaves','the leaves are beautiful','a_leaves']]},
+ winter:{do:[['skiing','go skiing','a_ski'],['sweets','eat snow rabbit sweets','x_sweets.jpg']],why:[['snowy',"it's snowy",'wx_cold'],['snow','I can play in the snow','a_snowman']]}};
+SEA.forEach(s=>{MORE.push('C1_'+s);CARD[s].do.forEach(d=>MORE.push('C2_'+d[0]));CARD[s].why.forEach(d=>MORE.push('C3_'+d[0]))});
+let my={};
+function start5(){steps($('#caSt'),1);my={};$('#caTitle').textContent='Choose your favorite season!';$('#caLine').style.display='none';$('#caSpk').style.display='none';$('#caSub').innerHTML='';
+  const G=$('#caOpts');G.className='grid g4';G.innerHTML='';let locked=false;
+  SEA.forEach(s=>{const b=seaCard(s);b.onclick=async()=>{if(locked)return;locked=true;my.s=s;b.classList.add('ok');sfx('ok');await play('W_'+s);caB1()};G.append(b)});show('s-card');play('I_card')}
+function caBlock(n,pre,post,opts,isOk,after){steps($('#caSt'),n);$('#caTitle').textContent='Choose a block!';$('#caSpk').style.display='none';$('#caSub').innerHTML='';
+  const L=$('#caLine');L.style.display='';L.innerHTML=`<span class="placed">${pre}</span><span class="blank">______</span><span class="placed">${post}</span>`;
+  const G=$('#caOpts');G.className='grid '+(opts.length<=2?'g2':'g4');G.innerHTML='';let locked=false;
+  opts.forEach(o=>{let b;if(o.img)b=card(o.img,o.t);else{b=document.createElement('button');b.className='tile';b.textContent=o.t}
+    b.onclick=async()=>{if(locked)return;if(isOk(o)){locked=true;b.classList.add('ok');good();const k=L.querySelector('.blank');k.textContent=o.t;k.className='placed fill';await play(o.a);await wait(300);after(o)}
+      else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450);$('#caSub').innerHTML=`Not in <b>${my.s}</b>!`}};G.append(b)});
+  play('I_block')}
+function caB1(){caBlock(2,'My favorite season is','.',SEA.map(s=>({t:s,a:'C1_'+s,s})),o=>o.s===my.s,o=>{my.a1=o.a;my.t1=`My favorite season is <u>${my.s}</u>.`;caB2()})}
+function caB2(){const s=my.s,others=shuffle(SEA.filter(x=>x!==s)).slice(0,2).map(x=>shuffle(CARD[x].do)[0]);
+  caBlock(3,`In ${s}, people in Japan`,'.',shuffle([...CARD[s].do,...others]).map(([k,t,img])=>({k,t,img,a:'C2_'+k,ok:CARD[s].do.some(d=>d[0]===k)})),o=>o.ok,o=>{my.a2=o.a;my.t2=`In ${s}, people in Japan <u>${o.t}</u>.`;caB3()})}
+function caB3(){caBlock(4,'I love it because','.',CARD[my.s].why.map(([k,t,img])=>({k,t,img,a:'C3_'+k})),()=>true,o=>{my.a3=o.a;my.t3=`I love it because <u>${o.t}</u>.`;caB4()})}
+function caB4(){steps($('#caSt'),5);$('#caTitle').textContent='Level 5 challenge! ⭐';$('#caSub').innerHTML='';const L=$('#caLine');L.innerHTML='<span class="placed fill">It does not last long, so I enjoy it now.</span>';
+  $('#caSpk').style.display='';$('#caSpk').onclick=()=>play('C4');const G=$('#caOpts');G.className='row';G.innerHTML='';
+  const y=document.createElement('button');y.className='cta';y.textContent='⭐ Add it 加上去';y.onclick=()=>{my.a4='C4';my.t4='It does not last long, so I enjoy it now.';addStar();myCard()};
+  const n=document.createElement('button');n.className='hbtn';n.textContent='Skip 跳過';n.onclick=()=>{my.a4=null;my.t4=null;myCard()};G.append(y,n);play('C4')}
+const myIds=()=>[my.a1,my.a2,my.a3,my.a4].filter(Boolean);
+function myCard(){$('#mcPic').src=im('sc_'+my.s+'.jpg');$('#mcText').innerHTML=[my.t1,my.t2,my.t3,my.t4].filter(Boolean).map(t=>`<span>${t}</span>`).join('');
+  try{localStorage.setItem(KEY+'card',JSON.stringify(my))}catch(e){}show('s-mycard');confetti();play('I_mycard',...myIds())}
+$('#mcRead').onclick=()=>play(...myIds());
+$('#mcAgain').onclick=start5;
+$('#mcDone').onclick=()=>doneSt(5,'My Season Card is ready! 🎉',[my.a1,my.a2,my.a3,my.a4].map((a,i)=>a&&[a,[my.t1,my.t2,my.t3,my.t4][i].replace(/<\/?u>/g,''),'sc_'+my.s+'.jpg']).filter(Boolean));
+MORE.forEach(loadBuf);
 </script>
 </body>
 </html>
