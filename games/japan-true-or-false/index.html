@@ -355,7 +355,7 @@ main{flex:1;position:relative;overflow:hidden}
     <p class="big scoreBig">Leo 4 : 4 Nina</p>
     <p class="sub">It's a tie! You are both winners!</p>
     <p class="big" id="scYou"></p>
-    <div class="row"><button class="watch" id="scShow">▶ Watch the show 看節目</button><button class="cta" id="scGo">Bonus Round ▶</button></div>
+    <div class="row"><button class="watch" id="scShow">▶ Watch the show 看節目</button><button class="cta" id="scGo">Finish ▶</button></div>
   </section>
   <section class="screen" id="s-host">
     <div class="steps" id="hoSt"></div>
@@ -455,7 +455,8 @@ function cheer(ok){buddy.classList.remove('yay','oops');void buddy.offsetWidth;b
 function good(){sfx('ok');cheer(true);addStar()}
 function bad(){sfx('no');cheer(false)}
 function show(id){$$('.screen').forEach(s=>s.classList.toggle('on',s.id===id));buddy.classList.toggle('on',id!=='s-home')}
-function steps(el,cur){const n=5;el.innerHTML='';for(let i=1;i<=n;i++){const d=document.createElement('i');d.textContent=i;if(i<cur)d.className='f';if(i===cur)d.className='c';el.append(d)}}
+let NS=5;
+function steps(el,cur){const n=NS;el.innerHTML='';for(let i=1;i<=n;i++){const d=document.createElement('i');d.textContent=i;if(i<cur)d.className='f';if(i===cur)d.className='c';el.append(d)}}
 function prog(el,n,f){el.innerHTML='';for(let i=0;i<n;i++){const d=document.createElement('i');if(i<f)d.className='f';el.append(d)}}
 function card(img,label,cls=''){const b=document.createElement('button');b.className='card '+cls;b.innerHTML=`<img src="img/${img.includes('.')?img:img+'.png'}" alt="">`+(label?`<span>${label}</span>`:'');return b}
 const im=n=>`img/${n.includes('.')?n:n+'.png'}`;
@@ -479,7 +480,7 @@ $('#homeBtn').onclick=()=>{stopAudio();show('s-home');refresh()};
 function clearSt(n){if(!cleared.includes(n))cleared.push(n);try{localStorage.setItem(KEY,JSON.stringify(cleared))}catch(e){}}
 
 /* ===== STATION 1 · Welcome to Tokyo! ===== */
-function start1w(){steps($('#st1'),1);show('s-1w');play('L01','L02','L03')}
+function start1w(){NS=5;steps($('#st1'),1);show('s-1w');play('L01','L02','L03')}
 $$('#s-1w .say').forEach(b=>b.onclick=()=>play(b.dataset.a));
 $('#clip1').onclick=()=>openVideo(0,77);
 $('#w1Go').onclick=()=>start1l();
@@ -557,7 +558,7 @@ function tfPick(T,wrongEl){$('#tfTitle').textContent='Pick the right word!';cons
 function tfNext(){ti++;ti<TFL.length?tfAsk():tfDone()}
 // step 5 sentence builder
 let si=0,SL=SENT1,sDone=null;
-function start1s(list=SENT1,next=done1){SL=list;sDone=next;steps($('#st5'),5);si=0;show('s-1s');play('I_order').then(ok=>ok&&sent())}
+function start1s(list=SENT1,next=done1){SL=list;sDone=next;steps($('#st5'),NS);si=0;show('s-1s');play('I_order').then(ok=>ok&&sent())}
 function sent(){const S=SL[si];prog($('#sprog'),SL.length,si);$('#sPic').src=im(S.img);$('#sSpk').onclick=()=>play(S.line);
   const box=$('#sentBox'),T=$('#tiles');box.innerHTML='';T.innerHTML='';let step=0,miss=0;
   shuffle(S.words.map((w,i)=>({w,i}))).forEach(o=>{const b=document.createElement('button');b.className='tile';b.textContent=o.w;b.dataset.i=o.i;
@@ -608,7 +609,7 @@ const SENT2=[
  {words:['In','spring,','people','enjoy','picnics','under','cherry','blossoms.'],line:'L24',img:'a_picnic'},
  {words:['In','autumn,','they','go','hiking','to','see','colorful','leaves.'],line:'L29',img:'a_hiking'}];
 let pq=[],pi=0,pNext=null;
-function startSort(){steps($('#st4'),3);pq=shuffle(SORT2);pi=0;pNext=()=>start1m(WAVE,()=>start1s(SENT2,done2),4);show('s-1q');play('I_season').then(ok=>ok&&askSort(false))}
+function startSort(){steps($('#st4'),3);pq=shuffle(SORT2);pi=0;pNext=()=>start1s(SENT2,done2);show('s-1q');play('I_season').then(ok=>ok&&askSort(false))}
 function askSort(say=true){const Q=pq[pi];prog($('#qprog'),pq.length,pi);$('#qSub').innerHTML='';$('#qText').innerHTML='';
   $('#qHead').innerHTML=`<img class="sentpic qpic" src="${im(Q.img)}" alt=""><p class="big">Which season?</p><button class="spk" id="qSpk">🔊</button>`;$('#qSpk').onclick=()=>play(Q.w);
   const g=$('#qGrid');g.innerHTML='';g.style.display='';let locked=false;
@@ -616,7 +617,7 @@ function askSort(say=true){const Q=pq[pi];prog($('#qprog'),pq.length,pi);$('#qSu
     if(s===Q.ans){locked=true;b.classList.add('ok');good();$('#qSub').innerHTML=Q.txt;await play('W_'+s,Q.after);pi++;pi<pq.length?setTimeout(askSort,300):pNext()}
     else{b.classList.add('no');bad();setTimeout(()=>b.classList.remove('no'),450);play(Q.w)}};g.append(b)});
   if(say)setTimeout(()=>play(Q.w),250);else play(Q.w)}
-function start2(){intro('Four Seasons','x_screen.jpg',[['L22',null,'Japan has four seasons.'],['L23',null,'Each season brings different weather and scenery.'],['L25',null,'Cherry blossoms start in the south and move north.']],[76,114],()=>start1l(W2,startSort,2))}
+function start2(){NS=4;intro('Four Seasons','x_screen.jpg',[['L22',null,'Japan has four seasons.'],['L23',null,'Each season brings different weather and scenery.'],['L25',null,'Cherry blossoms start in the south and move north.']],[76,114],()=>start1l(W2,startSort,2))}
 function done2(){doneSt(2,'Station 2 clear! 🌸',[['L24','In spring, people enjoy picnics under cherry blossoms.','a_picnic'],['L26','In summer, they wear yukata and watch fireworks.','a_fireworks'],['L29','In autumn, they go hiking to see colorful leaves.','a_hiking'],['L30','In snowy areas, they go skiing in winter.','a_ski']])}
 /* ===== STATION 3 · Why Do They Love the Seasons? ===== */
 const W3=[
@@ -642,7 +643,7 @@ const SENT3=[
  {words:['A','haiku','is','a','short','poem.'],line:'L40',img:'x_haiku.jpg'},
  {words:['These','traditions','show','respect','for','nature.'],line:'L43',img:'x_festival.jpg'},
  {words:['So','people','enjoy','their','beauty','now.'],line:'L36',img:'x_beauty.jpg'}];
-function start3(){intro('Why Do They Love the Seasons?','x_sweets.jpg',[['L31',null,'Why do people in Japan love the four seasons?'],['L33',null,'Even the sweets change!'],['L34','leo_head','They look like little flowers!']],[114,181],()=>start1l(W3,startSo,2))}
+function start3(){NS=4;intro('Why Do They Love the Seasons?','x_sweets.jpg',[['L31',null,'Why do people in Japan love the four seasons?'],['L33',null,'Even the sweets change!'],['L34','leo_head','They look like little flowers!']],[114,181],()=>start1l(W3,startHaiku,2))}
 function startSo(){steps($('#st4'),3);pq=shuffle(SO);pi=0;show('s-1q');play('I_so').then(ok=>ok&&askSo(false))}
 function askSo(say=true){const Q=pq[pi];prog($('#qprog'),pq.length,pi);$('#qSub').innerHTML='';const g=$('#qGrid');g.innerHTML='';g.style.display='none';
   $('#qHead').innerHTML=`<img class="sentpic qpic" src="${im(Q.img)}" alt=""><p class="big soQ">${Q.t}</p><button class="spk" id="qSpk">🔊</button>`;$('#qSpk').onclick=()=>play(Q.a);
@@ -652,12 +653,12 @@ function askSo(say=true){const Q=pq[pi];prog($('#qprog'),pq.length,pi);$('#qSub'
       else{b.classList.add('no');bad();setTimeout(()=>play(Q.a),400)}};T.append(b)});
   if(say)setTimeout(()=>play(Q.a),250);else play(Q.a)}
 let hi=0;
-function startHaiku(){steps($('#hkSt'),4);hi=0;show('s-hk');play('I_haiku').then(ok=>ok&&askHk(false))}
+function startHaiku(){steps($('#hkSt'),3);hi=0;show('s-hk');play('I_haiku').then(ok=>ok&&askHk(false))}
 function askHk(say=true){const H=HK[hi];prog($('#hkProg'),HK.length,hi);$('#hkTitle').textContent='Find the season word!';$('#hkSub').innerHTML='';
   const C=$('#hkCard');C.className='tfCard fixing hk';C.innerHTML='';const S=$('#hkSeasons');S.innerHTML='';S.style.display='none';let miss=0,locked=false;$('#hkSpk').onclick=()=>play(H.a);
   H.lines.forEach(l=>{const d=document.createElement('div');d.className='hl';l.forEach(x=>{const b=document.createElement('button');b.className='w';b.textContent=x;
     b.onclick=async()=>{if(locked)return;
-      if(x===H.key){locked=true;sfx('ok');addStar();b.classList.add('fixed');C.classList.remove('fixing');$$('#hkCard .w').forEach(y=>y.classList.remove('hintc'));$('#hkSub').innerHTML=`<b>${x.replace(/[.!]/g,'')}</b> is the season word!`;await play('W_seasonword');askHkS(H)}
+      if(x===H.key){locked=true;sfx('ok');addStar();b.classList.add('fixed');C.classList.remove('fixing');$$('#hkCard .w').forEach(y=>y.classList.remove('hintc'));$('#hkSub').innerHTML=`<b>${x.replace(/[.!]/g,'')}</b> is the season word!`;await play('W_seasonword',H.a);await wait(400);hi++;hi<HK.length?askHk():start1s(SENT3,done3)}
       else{b.classList.add('no');setTimeout(()=>b.classList.remove('no'),450);bad();miss++;if(miss>=2)$$('#hkCard .w').find(y=>y.textContent===H.key).classList.add('hintc')}};d.append(b)});C.append(d)});
   if(say)setTimeout(()=>play(H.a),250);else play(H.a)}
 function askHkS(H){$('#hkTitle').textContent='Which season is it?';const S=$('#hkSeasons');S.innerHTML='';S.style.display='';let locked=false;play('I_which');
@@ -690,7 +691,7 @@ const SENT4=[
  {words:['We','see','fireworks','in','summer.'],line:'P_fireworks_summer',img:'a_fireworks'},
  {words:['Japan','has','four','seasons.'],line:'L22',img:'x_screen.jpg'}];
 THINGS.forEach(x=>SEA.forEach(s=>MORE.push(`P_${x.k}_${s}`)));
-function start4(){intro('Japan: True or False!','x_show.jpg',[['L48','obaa_head','The show is starting!'],['L49','obaa_head','Welcome to "Japan: True or False!"'],['L50','obaa_head','Our players today are Leo and Nina!']],[180,200],startShow)}
+function start4(){NS=3;intro('Japan: True or False!','x_show.jpg',[['L48','obaa_head','The show is starting!'],['L49','obaa_head','Welcome to "Japan: True or False!"'],['L50','obaa_head','Our players today are Leo and Nina!']],[180,200],startShow)}
 let qn=0,you=0;
 function startShow(){steps($('#shSt'),2);qn=0;you=0;show('s-show');play('I_show').then(ok=>ok&&showQ(false))}
 function showQ(say=true){const Q=SHOW[qn];prog($('#shProg'),SHOW.length,qn);$('#shTitle').textContent=`Question ${qn+1}`;$('#shWhy').innerHTML='';$('#shPlayers').innerHTML='';
@@ -700,15 +701,15 @@ function showQ(say=true){const Q=SHOW[qn];prog($('#shProg'),SHOW.length,qn);$('#
     const P=$('#shPlayers');const mk=(head,name,ans)=>{const d=document.createElement('div');d.className='pl';d.innerHTML=(head?`<img src="${im(head)}" alt="">`:'<span class="you">🙋</span>')+`<b>${name}</b><i class="${ans?'t':'f'}">${ans?'TRUE':'FALSE'}</i>`;P.append(d);return d};
     const dy=mk(null,'You',mine);await wait(300);const dl=mk('leo_head','Leo',Q.leo[1]);await play(Q.leo[0]);const dn=mk('nina_head','Nina',Q.nina[1]);await play(Q.nina[0]);
     [[dy,mine],[dl,Q.leo[1]],[dn,Q.nina[1]]].forEach(([d,a])=>d.classList.add(a===Q.v?'right':'wrong'));$('#shBtns').style.display='none';
-    $('#shTitle').textContent=Q.v?'TRUE!':'FALSE!';await play(Q.host);askWhy(Q)});
+    $('#shTitle').textContent=Q.v?'TRUE!':'FALSE!';await play(Q.host);await wait(500);qn++;qn<SHOW.length?showQ():showScore()});
   if(say)setTimeout(()=>play(Q.q),250);else play(Q.q)}
 function askWhy(Q){$('#shTitle').textContent='Why?';const W=$('#shWhy');W.innerHTML='';let locked=false;play('I_why');const R=WHY.find(w=>w.k===Q.why);
   shuffle([R,...shuffle(WHY.filter(w=>w!==R)).slice(0,2)]).forEach(o=>{const b=document.createElement('button');b.className='choice long';b.textContent=o.t;
     b.onclick=async()=>{if(locked)return;if(o===R){locked=true;b.classList.add('ok');good();await play(...[].concat(R.a));await wait(300);qn++;qn<SHOW.length?showQ():showScore()}
       else{b.classList.add('no');bad()}};W.append(b)})}
-function showScore(){steps($('#scSt'),2);$('#scYou').textContent=`You: ${you} / 5`;show('s-score');if(you>=4)confetti();play('L74','L77')}
+function showScore(){steps($('#scSt'),3);$('#scYou').textContent=`You: ${you} / 5`;show('s-score');if(you>=4)confetti();play('L74','L77')}
 $('#scShow').onclick=()=>openVideo(198,304);
-$('#scGo').onclick=()=>startTF(TF4,3,startHost,'I_bonus');
+$('#scGo').onclick=()=>done4();
 let hoN=0;
 function startHost(){steps($('#hoSt'),4);hoN=0;show('s-host');play('I_host').then(ok=>ok&&hostQ())}
 function hostQ(){prog($('#hoProg'),3,hoN);let th=null,se=null,locked=false;$('#hoSub').innerHTML='';$('#hoTitle').textContent='Make a True or False question!';
@@ -732,9 +733,9 @@ const CARD={
  winter:{do:[['skiing','go skiing','a_ski'],['sweets','eat snow rabbit sweets','x_sweets.jpg']],why:[['snowy',"it's snowy",'wx_cold'],['snow','I can play in the snow','a_snowman']]}};
 SEA.forEach(s=>{MORE.push('C1_'+s);CARD[s].do.forEach(d=>MORE.push('C2_'+d[0]));CARD[s].why.forEach(d=>MORE.push('C3_'+d[0]))});
 let my={};
-function start5(){steps($('#caSt'),1);my={};$('#caTitle').textContent='Choose your favorite season!';$('#caLine').style.display='none';$('#caSpk').style.display='none';$('#caSub').innerHTML='';
+function start5(){NS=4;steps($('#caSt'),1);my={};$('#caTitle').textContent='Choose your favorite season!';$('#caLine').style.display='none';$('#caSpk').style.display='none';$('#caSub').innerHTML='';
   const G=$('#caOpts');G.className='grid g4';G.innerHTML='';let locked=false;
-  SEA.forEach(s=>{const b=seaCard(s);b.onclick=async()=>{if(locked)return;locked=true;my.s=s;b.classList.add('ok');sfx('ok');await play('W_'+s);caB1()};G.append(b)});show('s-card');play('I_card')}
+  SEA.forEach(s=>{const b=seaCard(s);b.onclick=async()=>{if(locked)return;locked=true;my.s=s;b.classList.add('ok');sfx('ok');my.a1='C1_'+s;my.t1=`My favorite season is <u>${s}</u>.`;await play('C1_'+s);caB2()};G.append(b)});show('s-card');play('I_card')}
 function caBlock(n,pre,post,opts,isOk,after){steps($('#caSt'),n);$('#caTitle').textContent='Choose a block!';$('#caSpk').style.display='none';$('#caSub').innerHTML='';
   const L=$('#caLine');L.style.display='';L.innerHTML=`<span class="placed">${pre}</span><span class="blank">______</span><span class="placed">${post}</span>`;
   const G=$('#caOpts');G.className='grid '+(opts.length<=2?'g2':'g4');G.innerHTML='';let locked=false;
@@ -744,9 +745,9 @@ function caBlock(n,pre,post,opts,isOk,after){steps($('#caSt'),n);$('#caTitle').t
   play('I_block')}
 function caB1(){caBlock(2,'My favorite season is','.',SEA.map(s=>({t:s,a:'C1_'+s,s})),o=>o.s===my.s,o=>{my.a1=o.a;my.t1=`My favorite season is <u>${my.s}</u>.`;caB2()})}
 function caB2(){const s=my.s,others=shuffle(SEA.filter(x=>x!==s)).slice(0,2).map(x=>shuffle(CARD[x].do)[0]);
-  caBlock(3,`In ${s}, people in Japan`,'.',shuffle([...CARD[s].do,...others]).map(([k,t,img])=>({k,t,img,a:'C2_'+k,ok:CARD[s].do.some(d=>d[0]===k)})),o=>o.ok,o=>{my.a2=o.a;my.t2=`In ${s}, people in Japan <u>${o.t}</u>.`;caB3()})}
-function caB3(){caBlock(4,'I love it because','.',CARD[my.s].why.map(([k,t,img])=>({k,t,img,a:'C3_'+k})),()=>true,o=>{my.a3=o.a;my.t3=`I love it because <u>${o.t}</u>.`;caB4()})}
-function caB4(){steps($('#caSt'),5);$('#caTitle').textContent='Level 5 challenge! ⭐';$('#caSub').innerHTML='';const L=$('#caLine');L.innerHTML='<span class="placed fill">It does not last long, so I enjoy it now.</span>';
+  caBlock(2,`In ${s}, people in Japan`,'.',shuffle([...CARD[s].do,...others]).map(([k,t,img])=>({k,t,img,a:'C2_'+k,ok:CARD[s].do.some(d=>d[0]===k)})),o=>o.ok,o=>{my.a2=o.a;my.t2=`In ${s}, people in Japan <u>${o.t}</u>.`;caB3()})}
+function caB3(){caBlock(3,'I love it because','.',CARD[my.s].why.map(([k,t,img])=>({k,t,img,a:'C3_'+k})),()=>true,o=>{my.a3=o.a;my.t3=`I love it because <u>${o.t}</u>.`;caB4()})}
+function caB4(){steps($('#caSt'),4);$('#caTitle').textContent='Level 5 challenge! ⭐';$('#caSub').innerHTML='';const L=$('#caLine');L.innerHTML='<span class="placed fill">It does not last long, so I enjoy it now.</span>';
   $('#caSpk').style.display='';$('#caSpk').onclick=()=>play('C4');const G=$('#caOpts');G.className='row';G.innerHTML='';
   const y=document.createElement('button');y.className='cta';y.textContent='⭐ Add it 加上去';y.onclick=()=>{my.a4='C4';my.t4='It does not last long, so I enjoy it now.';addStar();myCard()};
   const n=document.createElement('button');n.className='hbtn';n.textContent='Skip 跳過';n.onclick=()=>{my.a4=null;my.t4=null;myCard()};G.append(y,n);play('C4')}
